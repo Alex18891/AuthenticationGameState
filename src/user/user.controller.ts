@@ -3,21 +3,38 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { Response } from 'express';
+import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('register')
-  create( @Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Post('login')
-  login(@Body() loginUserDto: LoginUserDto) {
-    return this.userService.login(loginUserDto);
+  login(@Res() res: Response, @Body() loginUserDto: LoginUserDto) {
+    return this.userService.login(res, loginUserDto);
   }
 
+  @Post('forgotpwd')
+  forgotpwd(@Res() res: Response, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.forgotpwd(res, updateUserDto);
+  }
+
+  @Get('changepwd/:id/:token')
+  changepwdrender(@Param('id') id: string, @Param('token') token: string, @Res() res: Response) {
+    console.log(id)
+    return this.userService.changepwdrender(id, token, res);
+  }
+
+  @Post('changepwd/:id/:token')
+  changepwd(@Res() res: Response, @Param('id') id, @Param('token') token, @Body() changepwdUserDto: ChangepwdUserDto) {
+    return this.userService.changepwd(res, id, token, changepwdUserDto);
+  }
 
   @Get()
   findAll() {
