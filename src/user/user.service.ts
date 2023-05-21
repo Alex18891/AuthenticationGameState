@@ -1,51 +1,126 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/forgotpwd-user.dto';
 import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { LoginUserDto } from './dto/login-user.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { ChangepwdUserDto } from './dto/changepwd-user.dto';
+import { ConfigService } from '@nestjs/config';
 
-const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const nodemailer = require("nodemailer");
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>){}
-  async  create(createUserDto: CreateUserDto): Promise<User>{
+  constructor(@InjectModel(User.name) private UserModel: Model<User>, private configService: ConfigService) { }
+  async create(createUserDto: CreateUserDto) {
     const password = createUserDto.password;
-    const passwordEncrypt=await bcrypt.hash(password,10);
+    const passwordEncrypt = await bcrypt.hash(password, 10);
     createUserDto.password = passwordEncrypt;
-    const createdUser = new this.UserModel(createUserDto);
-    return createdUser.save();
+    const user = new this.UserModel(createUserDto);
+    return user.save();
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<User>{
+  async login(loginUserDto: LoginUserDto) {
     const password = loginUserDto.password;
-    const username=loginUserDto.username;
-    const userdb = await this.UserModel.findOne({username});
-    const passwordvalid = await bcrypt.compare(password,userdb.password);
+    const username = loginUserDto.username;
+    const userdb = await this.UserModel.findOne({ username });
+
     if (!userdb) {
-      throw new NotAcceptableException('could not find the user');
+      throw new NotFoundException('User not found');
     }
-    if(userdb && passwordvalid)
-    {
-      return userdb;  
+
+    const passwordvalid = await bcrypt.compare(password, userdb.password);
+
+    if (passwordvalid) {
+      return username
     }
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async forgotPassword(updateUserDto: UpdateUserDto) {
+    const email = updateUserDto.email
+
+    const sendResetPasswordMail = async (email, link) => {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'noreplyloginapp18881@gmail.com',//email responsible to send the email
+            pass: this.configService.get<string>('NODEMAILER_PASSWORD')//password of that email
+          }
+        });
+        const mailOptions = {
+          from: 'noreplyloginapp18881@gmail.com',
+          to: email,//email that is defined to the user input 
+          subject: 'Forgot Password',
+          //html: You just received a mail!
+          html: '<p> Link to reset your password: <br/><br/> <a href="' + link + '">' + link + '</a>'
+        }
+        transporter.sendMail(mailOptions)
+      } catch (error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+
+    try {
+      const user = await this.UserModel.findOne({ email }); //see if the email is in the mongodatabase
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      else {
+        const token = await jwt.sign(
+          {
+            id: user._id,
+            email: user.email
+          },
+          this.configService.get<string>('JWT_SECRET'),
+          {
+            expiresIn: '10m'
+          });
+        const link = `http://localhost:3000/user/changepwd/${user._id}/${token}`;
+        sendResetPasswordMail(email, link);
+        return 'Now you can verify your email';
+      }
+    } catch (error) {
+      return error
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async changePasswordRender(@Param('id') id, @Param('token') token) {
+    const userData = await this.UserModel.findOne({ _id: id }); //see if the id was created
+
+    if (!userData) {
+      return { token: token, status: "User not found" };
+    }
+
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify token
+      return { token: token, status: "Verified" };
+    } catch (error) {
+      return { token: token, status: "Something went wrong" };
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async changePassword(changepwdUserDto: ChangepwdUserDto) {
+    const password = changepwdUserDto.password;
+    const token = changepwdUserDto.token;
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    try {
+      const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify a token symmetric
+      const userData = await this.UserModel.findOne({ _id: user.id });
+      if (!userData) {
+        return { status: "User not found" };
+      }
+      const encryptedPassword = await bcrypt.hash(password, 10);//encrypt the password
+      await this.UserModel.updateOne(
+        { _id: user.id },
+        { $set: { "password": encryptedPassword } }
+      )
+      return { status: '200' }
+    } catch (error) {
+      return { status: "Something went wrong" };
+    }
   }
 }

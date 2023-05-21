@@ -1,15 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Render } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/forgotpwd-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('register')
-  create( @Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
@@ -18,24 +19,19 @@ export class UserController {
     return this.userService.login(loginUserDto);
   }
 
-
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Post('forgotpwd')
+  forgotPassword(@Body() updateUserDto: UpdateUserDto) {
+    return this.userService.forgotPassword(updateUserDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('changepwd/:id/:token')
+  @Render('index')
+  changePasswordRender(@Param('id') id: string, @Param('token') token: string) {
+    return this.userService.changePasswordRender(id, token);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Post('changepwd')
+  changePassword(@Body() changepwdUserDto: ChangepwdUserDto) {
+    return this.userService.changePassword(changepwdUserDto);
   }
 }

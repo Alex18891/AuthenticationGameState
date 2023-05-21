@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>New Password</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <img src="/logo.png" alt="Logo GameState" class="logo">
+    <p>To finish recovering your password, please type in a new one.</p>
+    <div class="login">
+        <form id="form">
+            <label><b>Password
+                </b>
+            </label>
+            <input type="Password" onkeyup="checkPasswordsMatch()" name="password" id="password" placeholder="Password"
+                autocomplete="off">
+            <br><br>
+            <label><b>Confirm Password
+                </b>
+            </label>
+            <input type="Password" onkeyup="checkPasswordsMatch()" name="confirmpassword" id="confirmpassword"
+                placeholder="Confirm Password" autocomplete="off">
+            <br><br>
+            <p id='textmatch'></p>
+            <input type="submit" name="confirm" id="confirm" value="Confirm">
+            <br><br>
+        </form>
+        <script>
+            const form = document.getElementById('form')
+            form.addEventListener('submit', submit)
+
+            async function submit(event) {
+                event.preventDefault()
+                var password = document.getElementById('password').value;
+                if (checkPasswordsMatch()) {
+                    var status = '<%- JSON.stringify(status) %>';
+                    if (JSON.parse(status) == "Verified") {
+                        var token = '<%- token %>';
+                        const result = await fetch('/user/changepwd', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                password,
+                                token
+                            })
+                        }).then((res) => res.json())
+                        if (result.status === '200') {
+                            alert('Sucesso')
+                            close();
+                        } else {
+                            alert('Failure')
+                        }
+                    }
+                    else if (JSON.parse(status) == "Something went wrong") {
+                        alert('Something went wrong')
+                    }
+                }
+            }
+
+            function checkPasswordsMatch() {
+                if (document.getElementById('password').value == document.getElementById('confirmpassword').value) {
+                    document.getElementById('textmatch').style.display = 'none'
+                    return true;
+                } else {
+                    document.getElementById('textmatch').style.display = 'block'
+                    document.getElementById('textmatch').style.color = 'red';
+                    document.getElementById('textmatch').innerHTML = 'Passwords are not the same';
+                    return false;
+                }
+            }
+        </script>
+</body>
+
+</html>

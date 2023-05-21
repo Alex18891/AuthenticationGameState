@@ -1,0 +1,87 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    font-family: 'Calibri';
+}
+
+input[type="submit"] {
+    background-color: gold;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 40%);
+}
+
+p {
+    display: block;
+    margin: 1em auto;
+    text-align: center;
+    color: #6A6A6A;
+    padding-bottom: 10px;
+}
+
+#textmatch {
+    display: none;
+    margin: auto;
+}
+
+.login {
+    margin: auto;
+    width: 50%;
+    border: 3px solid rgb(255, 255, 255);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    text-align: center;
+    background-color: white;
+}
+
+.register {
+    margin: auto;
+    width: 50%;
+    border: 3px solid rgb(255, 255, 255);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+    color: #000000;
+    padding: 20px;
+}
+
+label {
+    color: #000000;
+    font-size: 17px;
+    display: inline-block;
+    margin-bottom: 10px;
+    margin-right: 5px;
+}
+
+#password,
+#confirmpassword {
+    width: 300px;
+    height: 30px;
+    padding-left: 8px;
+    margin: auto;
+    border-radius: 15px;
+    border-color: #E1DFEC;
+    border-width: 1px;
+}
+
+#confirm {
+    width: 300px;
+    height: 30px;
+    border: none;
+    border-radius: 17px;
+    padding-left: 7px;
+    color: rgb(0, 0, 0);
+}
+
+.logo {
+    display: block;
+    margin: auto;
+    padding: 10px 0;
+    width: 15%;
+    height: 15%;
+}
