@@ -81,7 +81,7 @@ export class UserService {
           });
         const link = `http://localhost:3000/user/changepwd/${user._id}/${token}`;
         sendResetPasswordMail(email, link);
-        return 'Now you can verify your email';
+        return { status: "200", message: "Now you can verify your email" };
       }
     } catch (error) {
       return error
