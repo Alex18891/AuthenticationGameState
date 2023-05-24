@@ -130,7 +130,7 @@ export class UserService {
         { _id: user.id },
         { $set: { "password": encryptedPassword } }
       )
-      return { status:200};
+      return { status:200 };
     } catch (error) {
       return { status:400, message: "Something went wrong"};
     }
