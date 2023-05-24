@@ -41,13 +41,15 @@ export class UserService {
     const userdb = await this.UserModel.findOne({ username });
 
     if (!userdb) {
-      throw new NotFoundException('User not found');
+      return { status: 203, message: "User not found" };
     }
 
     const passwordvalid = await bcrypt.compare(password, userdb.password);
 
     if (passwordvalid) {
-      return username
+      return { status: 200, message: "User logged in" }
+    } else {
+      return { status: 400, message: "Wrong password" }
     }
   }
 
