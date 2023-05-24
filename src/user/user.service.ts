@@ -7,6 +7,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { error } from 'console';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -17,10 +18,21 @@ export class UserService {
   constructor(@InjectModel(User.name) private UserModel: Model<User>, private configService: ConfigService) { }
   async create(createUserDto: CreateUserDto) {
     const password = createUserDto.password;
+    const email = createUserDto.email;
     const passwordEncrypt = await bcrypt.hash(password, 10);
-    createUserDto.password = passwordEncrypt;
-    const user = new this.UserModel(createUserDto);
-    return user.save();
+    const username = createUserDto.username;
+    const usernameprevious = await this.UserModel.findOne({ username });
+    const emailprevious = await this.UserModel.findOne({ email });
+    if (!usernameprevious && !emailprevious) {
+      createUserDto.password = passwordEncrypt;
+      const user = new this.UserModel(createUserDto);
+      user.save();
+      return {status:200, message: "User Created"};
+    }
+    else{
+      return {status:203, message: "Username or email already exists" };
+    }
+   
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -81,7 +93,7 @@ export class UserService {
           });
         const link = `http://localhost:3000/user/changepwd/${user._id}/${token}`;
         sendResetPasswordMail(email, link);
-        return 'Now you can verify your email';
+        return {status: 200, message: 'Now you can verify your email'};
       }
     } catch (error) {
       return error
@@ -92,14 +104,14 @@ export class UserService {
     const userData = await this.UserModel.findOne({ _id: id }); //see if the id was created
 
     if (!userData) {
-      return { token: token, status: "User not found" };
+      return { token: token, status: 203, message: "User not found" };
     }
 
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify token
-      return { token: token, status: "Verified" };
+      return { token: token, status:200, message: "Verified" };
     } catch (error) {
-      return { token: token, status: "Something went wrong" };
+      return { token: token,status:400, message: "Something went wrong" };
     }
   }
 
@@ -111,16 +123,16 @@ export class UserService {
       const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify a token symmetric
       const userData = await this.UserModel.findOne({ _id: user.id });
       if (!userData) {
-        return { status: "User not found" };
+        return { status: 203, message: "User not found" };
       }
       const encryptedPassword = await bcrypt.hash(password, 10);//encrypt the password
       await this.UserModel.updateOne(
         { _id: user.id },
         { $set: { "password": encryptedPassword } }
       )
-      return { status: '200' }
+      return { status:200};
     } catch (error) {
-      return { status: "Something went wrong" };
+      return { status:400, message: "Something went wrong"};
     }
   }
 }
