@@ -35,8 +35,8 @@
                 event.preventDefault()
                 var password = document.getElementById('password').value;
                 if (checkPasswordsMatch()) {
-                    var status = '<%- JSON.stringify(status) %>';
-                    if (JSON.parse(status) == "Verified") {
+                    var message = '<%- JSON.stringify(message) %>';
+                    if (JSON.parse(message) == "Verified") {
                         var token = '<%- token %>';
                         const result = await fetch('/user/changepwd', {
                             method: 'POST',
@@ -48,14 +48,14 @@
                                 token
                             })
                         }).then((res) => res.json())
-                        if (result.status === '200') {
+                        if (result.status === 200) {
                             alert('Sucesso')
                             close();
                         } else {
                             alert('Failure')
                         }
                     }
-                    else if (JSON.parse(status) == "Something went wrong") {
+                    else if (JSON.parse(message) == "Something went wrong") {
                         alert('Something went wrong')
                     }
                 }
