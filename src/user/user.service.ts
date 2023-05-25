@@ -61,12 +61,12 @@ export class UserService {
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
-            user: 'noreplyloginapp18881@gmail.com',//email responsible to send the email
+            user: 'noreplygamestate@gmail.com',//email responsible to send the email
             pass: this.configService.get<string>('NODEMAILER_PASSWORD')//password of that email
           }
         });
         const mailOptions = {
-          from: 'noreplyloginapp18881@gmail.com',
+          from: 'noreplygamestate@gmail.com',
           to: email,//email that is defined to the user input 
           subject: 'Forgot Password',
           //html: You just received a mail!
