@@ -7,7 +7,6 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { error } from 'console';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
