@@ -9,7 +9,7 @@ export class GameController {
 
   @Post('search')
   search(@Body() searchGameDto: SearchGameDto) {
-    return this.gameService.search(searchGameDto);
+    return this.gameService.searchgame(searchGameDto);
   }
 
   @Get()

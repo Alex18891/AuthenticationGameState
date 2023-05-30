@@ -12,17 +12,26 @@ const searchGames = async (searchText) => {
 
 @Injectable()
 export class GameService {
-  async search(searchGameDto:SearchGameDto) {
-    const searchgame = searchGameDto.name;
-    console.log(searchgame);
-    const games = await searchGames(searchgame);
-    return games.map((game) => ({
+  async searchgame(searchGameDto:SearchGameDto) {
+    const search = searchGameDto.name;
+    console.log(search);
+    const games = await searchGames(search);
+    const namegame = games.map((game) => ({
       name: game.name,
-      developers: game.developers,
-      released: game.released,
-      platforms: game.platforms,
-      genres: game.genres,
-    }));
+    //  developers: game.developers,
+    //  released: game.released,
+     // platforms: game.platforms,
+     // genres: game.genres,
+    }))
+
+    if(namegame.length !== 0)
+    {
+      return {status:200, message:namegame}
+    }
+    else{
+      return { status: 203, message: "Game not found" };
+    }
+   
   }
 
   findAll() {
