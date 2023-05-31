@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, flatten } from '@nestjs/common';
 import { SearchGameDto } from './dto/search-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 
@@ -10,26 +10,44 @@ const searchGames = async (searchText) => {
   return fetch(url).then((response) => response.json()).then((data) => data.results);
 };  
 
+const allgames = async()=>{
+  const url = `https://api.rawg.io/api/games?key=${apiKey}&ordering=-metacritic`
+  return fetch(url).then((response) => response.json()).then((data) => data.results);
+};
+
 @Injectable()
 export class GameService {
   async searchgame(searchGameDto:SearchGameDto) {
     const search = searchGameDto.name;
-    console.log(search);
     const games = await searchGames(search);
-    const namegame = games.map((game) => ({
-      name: game.name,
-    //  developers: game.developers,
-    //  released: game.released,
-     // platforms: game.platforms,
-     // genres: game.genres,
-    }))
+    const namegame = games.map(function(game) {
+      return game.name;
+    })
+    const allinformationgames = await allgames();
+    const metacritic = allinformationgames.map(function(game) {
+      return  game.background_image;
+    })
+
+    const populargames = []
+    let tamanho = 6;
+    for (let i=0;i<tamanho; i++)
+    {
+      if(metacritic[i]!=null)
+      {
+        populargames.push(metacritic[i]);
+      } 
+      else{
+        tamanho = tamanho + 1
+      }
+    }
+
 
     if(namegame.length !== 0)
     {
-      return {status:200, message:namegame}
+      return {status:200, game:namegame,populargames:populargames}
     }
     else{
-      return { status: 203, message: "Game not found" };
+      return { status: 203, game: "Game not found" };
     }
    
   }
