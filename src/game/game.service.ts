@@ -30,22 +30,25 @@ export class GameService {
       return game.name;
     })
     const allinformationgames = await allgames();
-    const metacritic = allinformationgames.map(function(game) {
-      return  game.background_image;
-    })
-
+    const metacritic = allinformationgames.map((game)=> ({
+      background_img: game.background_image,
+      id:game.id
+    }))
     const populargames = []
     let tamanho = 6;
-    for (let i=0;i<tamanho; i++)
+    for(let l=0;l<tamanho; l++)
     {
-      if(metacritic[i]!=null)
+      const background_img = metacritic[l].background_img;  
+      const id = metacritic[l].id; 
+      if(background_img!=null)
       {
-        populargames.push(metacritic[i]);
-      } 
+        populargames.push(background_img,id);
+      }
       else{
         tamanho = tamanho + 1
       }
     }
+   
     if(namegame.length !== 0)
     {
       return {status:200, game:namegame,populargames:populargames}
