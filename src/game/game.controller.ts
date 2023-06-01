@@ -12,6 +12,11 @@ export class GameController {
     return this.gameService.searchgame(searchGameDto);
   }
 
+  @Post('searchbyid')
+  searchByID(@Body() searchGameDto: SearchGameDto) {
+    return this.gameService.searchGameByID(searchGameDto);
+  }
+
   @Get()
   findAll() {
     return this.gameService.findAll();
