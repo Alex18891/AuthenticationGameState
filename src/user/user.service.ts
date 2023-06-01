@@ -17,10 +17,21 @@ export class UserService {
   constructor(@InjectModel(User.name) private UserModel: Model<User>, private configService: ConfigService) { }
   async create(createUserDto: CreateUserDto) {
     const password = createUserDto.password;
+    const email = createUserDto.email;
     const passwordEncrypt = await bcrypt.hash(password, 10);
-    createUserDto.password = passwordEncrypt;
-    const user = new this.UserModel(createUserDto);
-    return user.save();
+    const username = createUserDto.username;
+    const usernameprevious = await this.UserModel.findOne({ username });
+    const emailprevious = await this.UserModel.findOne({ email });
+    if (!usernameprevious && !emailprevious) {
+      createUserDto.password = passwordEncrypt;
+      const user = new this.UserModel(createUserDto);
+      user.save();
+      return {status:200, message: "User Created"};
+    }
+    else{
+      return {status:203, message: "Username or email already exists" };
+    }
+   
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -29,13 +40,15 @@ export class UserService {
     const userdb = await this.UserModel.findOne({ username });
 
     if (!userdb) {
-      throw new NotFoundException('User not found');
+      return { status: 203, message: "User not found" };
     }
 
     const passwordvalid = await bcrypt.compare(password, userdb.password);
 
     if (passwordvalid) {
-      return username
+      return { status: 200, message: "User logged in" }
+    } else {
+      return { status: 400, message: "Wrong password" }
     }
   }
 
@@ -47,12 +60,12 @@ export class UserService {
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
-            user: 'noreplyloginapp18881@gmail.com',//email responsible to send the email
+            user: 'noreplygamestate@gmail.com',//email responsible to send the email
             pass: this.configService.get<string>('NODEMAILER_PASSWORD')//password of that email
           }
         });
         const mailOptions = {
-          from: 'noreplyloginapp18881@gmail.com',
+          from: 'noreplygamestate@gmail.com',
           to: email,//email that is defined to the user input 
           subject: 'Forgot Password',
           //html: You just received a mail!
@@ -81,7 +94,7 @@ export class UserService {
           });
         const link = `http://localhost:3000/user/changepwd/${user._id}/${token}`;
         sendResetPasswordMail(email, link);
-        return { status: "200", message: "Now you can verify your email" };
+        return {status: 200, message: 'Now you can verify your email'};
       }
     } catch (error) {
       return error
@@ -92,14 +105,14 @@ export class UserService {
     const userData = await this.UserModel.findOne({ _id: id }); //see if the id was created
 
     if (!userData) {
-      return { token: token, status: "User not found" };
+      return { token: token, status: 203, message: "User not found" };
     }
 
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify token
-      return { token: token, status: "Verified" };
+      return { token: token, status:200, message: "Verified" };
     } catch (error) {
-      return { token: token, status: "Something went wrong" };
+      return { token: token,status:400, message: "Something went wrong" };
     }
   }
 
@@ -111,16 +124,16 @@ export class UserService {
       const user = jwt.verify(token, this.configService.get<string>('JWT_SECRET')); // verify a token symmetric
       const userData = await this.UserModel.findOne({ _id: user.id });
       if (!userData) {
-        return { status: "User not found" };
+        return { status: 203, message: "User not found" };
       }
       const encryptedPassword = await bcrypt.hash(password, 10);//encrypt the password
       await this.UserModel.updateOne(
         { _id: user.id },
         { $set: { "password": encryptedPassword } }
       )
-      return { status: '200' }
+      return { status:200 };
     } catch (error) {
-      return { status: "Something went wrong" };
+      return { status:400, message: "Something went wrong"};
     }
   }
 }
