@@ -7,10 +7,10 @@ export class Topic extends Document {
     name: string;
     @Prop({ required: true })
     text: string;
-    @Prop({ required: true, type: String })
+    @Prop({ required: true})
     forum_id: number;
     @Prop({ required: true })
-    user_id: number;
+    user_id: string;
     @Prop({ required: false, default: 0 })
     likes: number;
     @Prop({ required: false, default: 0 })

@@ -7,7 +7,7 @@ export class CreateTopicDto {
 
     text: string;
 
-    user_id: number;
+    user_id: string;
 
     forum_id: number;
 

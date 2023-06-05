@@ -22,7 +22,7 @@ export class TopicService {
       return {status:200, message: "Topic Created"};
     }
     else{
-      return {status:400, message: "Fill all" };
+      return {status:400, message: "Fill all fields" };
     }
    
   }
