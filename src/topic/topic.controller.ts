@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { TopicService } from './topic.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
+import { SearchTopicDto } from './dto/search-topic.dto';
 
 @Controller('topic')
 export class TopicController {
@@ -10,6 +11,11 @@ export class TopicController {
   @Post('create')
   create(@Body() createTopicDto: CreateTopicDto) {
     return this.topicService.create(createTopicDto);
+  }
+
+  @Post('searchbyid')
+  searchTopicByUser(@Body() searchTopicDto: SearchTopicDto) {
+    return this.topicService.searchTopicByUser(searchTopicDto);
   }
 
   @Get()
