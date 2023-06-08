@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Topic } from './schemas/topic.schema';
 import { SearchTopicDto } from './dto/search-topic.dto';
 import { SearchTopicIDDto } from './dto/search-topic-id.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 const apiKey = '9c00b654361b4202be900194835b8665';
 
@@ -68,6 +69,22 @@ export class TopicService {
     const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text');
 
     return { status: 200, message: { topics } };
+  }
+
+  async createComment(createCommentDto: CreateCommentDto) {
+    const text = createCommentDto.text;
+    const userID = createCommentDto.user_id;
+    const topicID = createCommentDto.topic_id;
+
+    if (text) {
+      await this.TopicModel.findByIdAndUpdate({_id: topicID}, {
+          $push: {'Comment': {"text": text,"user_id": userID} }
+      });
+      return {status:200, message: "Comment Created"};
+    }
+    else{
+      return {status:400, message: "Fill all fields" };
+    }
   }
 
   findAll() {
