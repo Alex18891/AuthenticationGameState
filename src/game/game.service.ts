@@ -67,12 +67,12 @@ export class GameService {
       return { status: 404, message: "Game not found" };
     }
     else{
-      const { name, id, developers, released: release_date, background_image: image } = game;
+      const { name, id, developers, released: release_date, background_image: image, description } = game;
       const developerNames = developers.map((developer) => ({
         name: developer.name,
         image: developer.image_background
       }));
-      return { status: 200, message:{ name, id, developers: developerNames, release_date, image }}
+      return { status: 200, message:{ name, id, developers: developerNames, release_date, image, description }}
     }
   }
 
