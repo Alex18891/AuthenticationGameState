@@ -7,6 +7,7 @@ import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { Topic } from './schemas/topic.schema';
 import { SearchTopicDto } from './dto/search-topic.dto';
+import { SearchTopicIDDto } from './dto/search-topic-id.dto';
 
 const apiKey = '9c00b654361b4202be900194835b8665';
 
@@ -59,6 +60,14 @@ export class TopicService {
       }
     }
     return { status: 200, message: { topics, images } };
+  }
+
+  async searchTopicByID(searchTopicIDDto: SearchTopicIDDto) {
+    const topic_id = searchTopicIDDto.topic_id;
+
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text');
+
+    return { status: 200, message: { topics } };
   }
 
   findAll() {

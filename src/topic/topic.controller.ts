@@ -3,6 +3,7 @@ import { TopicService } from './topic.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
 import { SearchTopicDto } from './dto/search-topic.dto';
+import { SearchTopicIDDto } from './dto/search-topic-id.dto';
 
 @Controller('topic')
 export class TopicController {
@@ -17,6 +18,12 @@ export class TopicController {
   searchTopicByUser(@Body() searchTopicDto: SearchTopicDto) {
     return this.topicService.searchTopicByUser(searchTopicDto);
   }
+
+  @Post('searchbytopicid')
+  searchTopicByID(@Body() searchTopicIDDto: SearchTopicIDDto) {
+    return this.topicService.searchTopicByID(searchTopicIDDto);
+  }
+
 
   @Get()
   findAll() {
