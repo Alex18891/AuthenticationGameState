@@ -63,13 +63,27 @@ export class TopicService {
     return { status: 200, message: { topics, images } };
   }
 
-  async searchTopicByID(searchTopicIDDto: SearchTopicIDDto) {
+  async searchTopicByID(searchTopicIDDto) {
     const topic_id = searchTopicIDDto.topic_id;
-
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text');
-
-    return { status: 200, message: { topics } };
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text comments.text comments.user_id comments.createdAt').lean();
+  
+    const modifiedComments = [];
+  
+    for (const comment of topics.comments) {
+      const username = await this.UserModel.findOne({ _id: comment.user_id }).select('username -_id');
+  
+      const modifiedComment = { ...comment, username: username.username };
+      modifiedComments.push(modifiedComment);
+    }
+  
+    const modifiedTopics = {
+      ...topics,
+      comments: modifiedComments
+    };
+  
+    return { status: 200, message: { topics: modifiedTopics } };
   }
+  
 
   async createComment(createCommentDto: CreateCommentDto) {
     const text = createCommentDto.text;
@@ -78,7 +92,7 @@ export class TopicService {
 
     if (text) {
       await this.TopicModel.findByIdAndUpdate({_id: topicID}, {
-          $push: {'Comment': {"text": text,"user_id": userID} }
+          $push: {'comments': {"text": text,"user_id": userID} }
       });
       return {status:200, message: "Comment Created"};
     }

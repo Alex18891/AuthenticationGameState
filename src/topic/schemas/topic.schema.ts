@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
-class Comment {
-    @Prop({ type: String, required: true, lowercase: true })
+class Comments {
+    @Prop({ type: String, required: true })
     text: string;
   
     @Prop({ required: true })
@@ -13,7 +13,7 @@ class Comment {
     topic_id: string;
 }
 
-const CommentSchema = SchemaFactory.createForClass(Comment);
+const CommentSchema = SchemaFactory.createForClass(Comments);
 
 @Schema({ timestamps: true })
 export class Topic extends Document {
@@ -26,7 +26,7 @@ export class Topic extends Document {
     @Prop({ required: true })
     user_id: string;
     @Prop({ type: [CommentSchema], required: false })
-    Comment: Comment[];
+    comments: Comments[];
     @Prop({ required: false, default: 0 })
     likes: number;
     @Prop({ required: false, default: 0 })
