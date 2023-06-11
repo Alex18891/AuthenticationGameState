@@ -5,6 +5,7 @@ import { UpdateTopicDto } from './dto/update-topic.dto';
 import { SearchTopicDto } from './dto/search-topic.dto';
 import { SearchTopicIDDto } from './dto/search-topic-id.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { LikeDislikeTopicDto } from './dto/like-dislike-topic.dto';
 
 @Controller('topic')
 export class TopicController {
@@ -30,6 +31,12 @@ export class TopicController {
   createComment(@Body() createCommentDto: CreateCommentDto) {
     return this.topicService.createComment(createCommentDto);
   }
+
+  @Post('likedislike')
+  likeTopic(@Body() likeDislikeTopicDto: LikeDislikeTopicDto) {
+    return this.topicService.likeDislikeTopic(likeDislikeTopicDto);
+  }
+
 
   @Get()
   findAll() {

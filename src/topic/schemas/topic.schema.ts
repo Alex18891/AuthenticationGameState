@@ -27,9 +27,9 @@ export class Topic extends Document {
     user_id: string;
     @Prop({ type: [CommentSchema], required: false })
     comments: Comments[];
-    @Prop({ required: false, default: 0 })
+    @Prop({ required: false, default: 0, MIN_VALUE: 0 })
     likes: number;
-    @Prop({ required: false, default: 0 })
+    @Prop({ required: false, default: 0, MIN: 0 })
     dislikes: number;
 }
 
