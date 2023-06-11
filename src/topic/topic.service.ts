@@ -45,13 +45,22 @@ export class TopicService {
       return { status: 203, message: "User not found" };
     }
 
-    const topics = await this.TopicModel.find({ user_id: user._id }).select('_id name forum_id');
+    const topics = await this.TopicModel.find({ user_id: user._id }).select('_id name forum_id comments');
     const images = [];
-
+    const commentsbytopicos = []
     for (const topic of topics) {
+      const commentopic = []
       const forumID = topic.forum_id;
+      const comment = topic.comments;
       const game = await searchGamesByID(forumID);
       const { background_image: image } = game;
+      
+      for(const com of comment)
+      { 
+        const user = await this.UserModel.findById(com.user_id);
+        commentopic.push({username:user.username});
+      }  
+      commentsbytopicos.push(topic.id,commentopic);
       
       if (image) {
         images.push(image);
@@ -60,7 +69,7 @@ export class TopicService {
         images.push(defaultImage);
       }
     }
-    return { status: 200, message: { topics, images } };
+    return { status: 200, message: { topics, images,commentsbytopicos } };
   }
 
   async searchTopicByID(searchTopicIDDto) {
@@ -83,7 +92,7 @@ export class TopicService {
   
     return { status: 200, message: { topics: modifiedTopics } };
   }
-  
+
 
   async createComment(createCommentDto: CreateCommentDto) {
     const text = createCommentDto.text;
