@@ -9,6 +9,7 @@ import { Topic } from './schemas/topic.schema';
 import { SearchTopicDto } from './dto/search-topic.dto';
 import { SearchTopicIDDto } from './dto/search-topic-id.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { LikeDislikeTopicDto } from './dto/like-dislike-topic.dto';
 
 const apiKey = '9c00b654361b4202be900194835b8665';
 
@@ -65,7 +66,7 @@ export class TopicService {
 
   async searchTopicByID(searchTopicIDDto) {
     const topic_id = searchTopicIDDto.topic_id;
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text comments.text comments.user_id comments.createdAt').lean();
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes comments.text comments.user_id comments.createdAt').lean();
   
     const modifiedComments = [];
   
@@ -99,6 +100,20 @@ export class TopicService {
     else{
       return {status:400, message: "Fill all fields" };
     }
+  }
+
+  async likeDislikeTopic(likeDislikeTopicDto: LikeDislikeTopicDto) {
+    var likes = likeDislikeTopicDto.likes;
+    var dislikes = likeDislikeTopicDto.dislikes;
+    const topicID = likeDislikeTopicDto.topic_id;
+
+    console.log("likes", likes)
+    console.log("dislikes", dislikes)
+    console.log("\n")
+
+    await this.TopicModel.findByIdAndUpdate({_id: topicID}, {likes: likes, dislikes: dislikes})
+    const likesDislikes = await this.TopicModel.findOne({ _id: topicID }).select('likes dislikes');
+    return {status:200, message: {likes}};
   }
 
   findAll() {
