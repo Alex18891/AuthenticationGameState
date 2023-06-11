@@ -126,7 +126,7 @@ export class TopicService {
 
     await this.TopicModel.findByIdAndUpdate({_id: topicID}, {likes: likes, dislikes: dislikes})
     const likesDislikes = await this.TopicModel.findOne({ _id: topicID }).select('likes dislikes');
-    return {status:200, message: {likes}};
+    return {status:200, message: {likesDislikes}};
   }
 
   findOne(id: number) {
