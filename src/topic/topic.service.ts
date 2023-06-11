@@ -87,8 +87,9 @@ export class TopicService {
     }
   }
 
-  findAll() {
-    return `This action returns all topic`;
+  async findAll() {
+    const topics = await this.TopicModel.find({}, {name: 1, _id: 1})
+    return {status: 200, message: "Topics searched successfully", topics }
   }
 
   findOne(id: number) {
