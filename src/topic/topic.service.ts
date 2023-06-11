@@ -111,6 +111,10 @@ export class TopicService {
     }
   }
 
+  async findAll() {
+    const topics = await this.TopicModel.find({}, {name: 1, _id: 1})
+    return {status: 200, message: "Topics searched successfully", topics}
+  }
   async likeDislikeTopic(likeDislikeTopicDto: LikeDislikeTopicDto) {
     var likes = likeDislikeTopicDto.likes;
     var dislikes = likeDislikeTopicDto.dislikes;
@@ -123,10 +127,6 @@ export class TopicService {
     await this.TopicModel.findByIdAndUpdate({_id: topicID}, {likes: likes, dislikes: dislikes})
     const likesDislikes = await this.TopicModel.findOne({ _id: topicID }).select('likes dislikes');
     return {status:200, message: {likes}};
-  }
-
-  findAll() {
-    return `This action returns all topic`;
   }
 
   findOne(id: number) {
