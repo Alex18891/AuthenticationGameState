@@ -37,6 +37,10 @@ export class TopicController {
     return this.topicService.likeDislikeTopic(likeDislikeTopicDto);
   }
 
+  @Get('searchbygameid/:gameID')
+  searchTopicByGame(@Param('gameID') id: string) {
+    return this.topicService.searchTopicByGame(+id)
+  }
 
   @Get()
   findAll() {
