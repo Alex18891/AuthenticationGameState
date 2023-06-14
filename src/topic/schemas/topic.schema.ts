@@ -11,6 +11,12 @@ class Comments {
 
     @Prop({ required: true })
     topic_id: string;
+    get createdAt(): Date {
+        return this.createdAt;
+      }
+    get updatedAt(): Date {
+    return this.updatedAt;
+    }
 }
 
 const CommentSchema = SchemaFactory.createForClass(Comments);
