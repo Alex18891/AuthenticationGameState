@@ -5,4 +5,10 @@ export class LikeDislikeTopicDto {
     likes: number;
 
     dislikes: number;
+
+    likeDislike: number;
+
+    username: string;
+
+    usernameLD: string;
 }

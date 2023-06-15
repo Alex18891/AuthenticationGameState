@@ -27,10 +27,15 @@ export class TopicService {
   async create(createTopicDto: CreateTopicDto) {
     const name = createTopicDto.name;
     const text = createTopicDto.text;
+    const likeDislike = 0;
+    const username = ""
 
     if (name && text) {
       const topic = new this.TopicModel(createTopicDto);
       topic.save();
+      await this.TopicModel.findOneAndUpdate({name: name}, {
+        $set: {'likeDislike': {'username': username, 'likeDislike': likeDislike} }
+      });
       return {status:200, message: "Topic Created"};
     }
     else{
@@ -75,7 +80,7 @@ export class TopicService {
 
   async searchTopicByID(searchTopicIDDto) {
     const topic_id = searchTopicIDDto.topic_id;
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes comments.text comments.user_id comments.createdAt').lean();
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
   
     const modifiedComments = [];
   
@@ -120,10 +125,29 @@ export class TopicService {
     var likes = likeDislikeTopicDto.likes;
     var dislikes = likeDislikeTopicDto.dislikes;
     const topicID = likeDislikeTopicDto.topic_id;
+    const username = likeDislikeTopicDto.username;
+    const usernameLD = likeDislikeTopicDto.usernameLD;
+    const likeDislike = likeDislikeTopicDto.likeDislike;
 
-    console.log("likes", likes)
-    console.log("dislikes", dislikes)
-    console.log("\n")
+    console.log(username)
+    console.log(usernameLD)
+
+    console.log(await this.TopicModel.findByIdAndUpdate({_id: topicID}).select('likeDislike.username'))
+
+    if(usernameLD == username) {
+      await this.TopicModel.findOneAndUpdate({_id: topicID, 'likeDislike': {$elemMatch: {'username': usernameLD}}}, {
+        $pull: {'likeDislike': {'username': usernameLD}}
+      });
+      await this.TopicModel.findOneAndUpdate({_id: topicID}, {
+        $push: {'likeDislike': {'username': username, 'likeDislike': likeDislike} }
+      });
+    } else if(usernameLD != username) {
+      await this.TopicModel.findByIdAndUpdate({_id: topicID}, {
+        $push: {'likeDislike': {'username': username, 'likeDislike': likeDislike} },
+  
+      });
+    }
+    
 
     await this.TopicModel.findByIdAndUpdate({_id: topicID}, {likes: likes, dislikes: dislikes})
     const likesDislikes = await this.TopicModel.findOne({ _id: topicID }).select('likes dislikes');
