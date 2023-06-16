@@ -23,7 +23,7 @@ const CommentSchema = SchemaFactory.createForClass(Comments);
 
 @Schema({ timestamps: false })
 class LikeDislike {
-    @Prop({ type: String, required: true, default: 'user' })
+    @Prop({ type: String, required: true })
     username: string;
   
     @Prop({ required: true, default: 0 })
