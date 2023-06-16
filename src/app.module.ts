@@ -6,9 +6,10 @@ import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { GameModule } from './game/game.module';
 import { TopicModule } from './topic/topic.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost/27017'), ConfigModule.forRoot(), UserModule, GameModule, TopicModule],
+  imports: [MongooseModule.forRoot('mongodb://localhost/27017'), ConfigModule.forRoot(), UserModule, GameModule, TopicModule, ReviewsModule],
   controllers: [AppController],
   providers: [AppService],
 })
