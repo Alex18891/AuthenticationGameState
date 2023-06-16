@@ -29,6 +29,9 @@ export class GameService {
     const namegame = games.map(function(game) {
       return game.name;
     })
+    const idgame = games.map(function(game) {
+      return game.id;
+    })
     const allinformationgames = await allgames();
     const metacritic = allinformationgames.map((game)=> ({
       background_img: game.background_image,
@@ -51,7 +54,7 @@ export class GameService {
    
     if(namegame.length !== 0)
     {
-      return {status:200, game:namegame,populargames:populargames}
+      return {status:200,id:idgame, game:namegame,populargames:populargames}
     }
     else{
       return { status: 203, game: "Game not found" };
