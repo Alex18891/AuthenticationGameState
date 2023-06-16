@@ -21,6 +21,17 @@ class Comments {
 
 const CommentSchema = SchemaFactory.createForClass(Comments);
 
+@Schema({ timestamps: false })
+class LikeDislike {
+    @Prop({ type: String, required: true, default: 'user' })
+    username: string;
+  
+    @Prop({ required: true, default: 0 })
+    likeDislike: number;
+}
+
+const LikeDislikeSchema = SchemaFactory.createForClass(LikeDislike);
+
 @Schema({ timestamps: true })
 export class Topic extends Document {
     @Prop({ required: true, type: String })
@@ -37,6 +48,8 @@ export class Topic extends Document {
     likes: number;
     @Prop({ required: false, default: 0, MIN: 0 })
     dislikes: number;
+    @Prop({ type: [LikeDislikeSchema], required: false })
+    likeDislike: LikeDislike[];
 }
 
 export const TopicSchema = SchemaFactory.createForClass(Topic);
