@@ -31,7 +31,6 @@ export class UserService {
     else{
       return {status:203, message: "Username or email already exists" };
     }
-   
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -134,6 +133,15 @@ export class UserService {
       return { status:200 };
     } catch (error) {
       return { status:400, message: "Something went wrong"};
+    }
+  }
+
+  async searchUserByID(id: string) {
+    const user = await this.UserModel.findOne({_id: id}).select('pushToken -_id')
+    if (user) {
+      return { status: 200, message: {user} }
+    } else {
+      return { status: 203, message: "User not found"}
     }
   }
 }

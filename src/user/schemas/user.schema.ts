@@ -11,6 +11,8 @@ export class User extends Document {
     email: string;
     @Prop({ required: false })
     country: string;
+    @Prop({ required: true, type: String })
+    pushToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

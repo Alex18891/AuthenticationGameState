@@ -34,4 +34,9 @@ export class UserController {
   changePassword(@Body() changepwdUserDto: ChangepwdUserDto) {
     return this.userService.changePassword(changepwdUserDto);
   }
+
+  @Get(':id')
+  searchUserByID(@Param('id') id: string) {
+    return this.userService.searchUserByID(id)
+  }
 }
