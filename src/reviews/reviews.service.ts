@@ -4,11 +4,24 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './schemas/review.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
+import { SearchReviewDto } from './dto/search-review.dto';
+
+
+const apiKey = '9c00b654361b4202be900194835b8665';
+
+const searchGamesByID = async (ID) => {
+  const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data;
+};
 
 @Injectable()
 export class ReviewsService {
-  constructor(@InjectModel(Review.name) private ReviewModel: Model<Review>, private configReviewService: ConfigService) {}
+  constructor(@InjectModel(User.name) private UserModel: Model<User>,private configUserService: ConfigService,
+  @InjectModel(Review.name) private ReviewModel: Model<Review>, private configReviewService: ConfigService) {}
   create(createReviewDto: CreateReviewDto) {
     const rating = createReviewDto.rating;
 
@@ -21,6 +34,50 @@ export class ReviewsService {
       return {status:400, message: "Fill all fields" };
     }
 
+  }
+
+  async searchReviewByGame(id: number) {
+    const reviews = await this.ReviewModel.find({forum_id: id})
+    const game = await searchGamesByID(id);
+    const reviewsgame= [];
+    if(reviews.length!=0 )
+    {
+      for (const review of reviews) {
+        const user = await this.UserModel.findById(review.user_id); 
+        reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
+           
+      }
+  
+      return {status: 200, message: "Reviews searched successfully", reviewsgame}
+    }
+    else{
+      return {status: 203, message: "Reviews not found"}
+    } 
+  }
+
+  
+  async searchReviewByUser(searchreviewDto: SearchReviewDto) {
+    const username = searchreviewDto.username;
+
+    const user = await this.UserModel.findOne({ username: username });
+    if (!user) {
+      return { status: 203, message: "User not found" };
+    }
+    const reviews = await this.ReviewModel.find({user_id:user._id})
+    
+    const reviewsbyusernames= [];
+    if(reviews.length!=0 )
+    {
+      for (const review of reviews) {
+        const game = await searchGamesByID(review.forum_id);
+        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image,forum_id:review.forum_id})
+      }
+  
+      return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}
+    }
+    else{
+      return {status: 203, message: "Reviews not found"}
+    } 
   }
 
   findAll() {

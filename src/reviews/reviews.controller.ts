@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { SearchReviewDto } from './dto/search-review.dto';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -15,6 +16,16 @@ export class ReviewsController {
   @Get()
   findAll() {
     return this.reviewsService.findAll();
+  }
+
+  @Get('searchbyid/:gameID')
+  searchReviewByGame(@Param('gameID') id: string) {
+    return this.reviewsService.searchReviewByGame(+id)
+  }
+
+  @Post('searchbyuser')
+  searchReviewByUser(@Body() searchreviewDto: SearchReviewDto) {
+    return this.reviewsService.searchReviewByUser(searchreviewDto)
   }
 
   @Get(':id')
