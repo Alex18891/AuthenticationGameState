@@ -12,7 +12,7 @@ export class ReviewsService {
   create(createReviewDto: CreateReviewDto) {
     const rating = createReviewDto.rating;
 
-    if (rating) {
+    if (rating >= 0 && rating <= 10) {
       const review = new this.ReviewModel(createReviewDto);
       review.save();
       return {status:200, message: "Game added!"};

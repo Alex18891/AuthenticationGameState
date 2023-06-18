@@ -1,5 +1,6 @@
 import { Length } from "class-validator";
 import { ObjectId } from "mongoose";
+import { LikeDislikeTopicDto } from "./like-dislike-topic.dto";
 
 export class CreateTopicDto {
 
@@ -12,4 +13,5 @@ export class CreateTopicDto {
 
     forum_id: number;
 
+    likeDislike: LikeDislikeTopicDto
 }

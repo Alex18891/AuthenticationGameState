@@ -11,7 +11,7 @@ export class Review extends Document {
     forum_id: number;
     @Prop({ type: String, required: true })
     user_id: string;
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: false })
     title: string;
     @Prop({ type: Number, required: false })
     gameStatus: number;

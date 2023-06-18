@@ -27,15 +27,10 @@ export class TopicService {
   async create(createTopicDto: CreateTopicDto) {
     const name = createTopicDto.name;
     const text = createTopicDto.text;
-    const likeDislike = 0;
-    const username = ""
 
     if (name && text) {
       const topic = new this.TopicModel(createTopicDto);
       topic.save();
-      await this.TopicModel.findOneAndUpdate({name: name}, {
-        $set: {'likeDislike': {'username': username, 'likeDislike': likeDislike} }
-      });
       return {status:200, message: "Topic Created"};
     }
     else{
