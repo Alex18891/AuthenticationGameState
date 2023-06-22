@@ -27,7 +27,6 @@ export class UserController {
 
   @Put(':id')
   updateUserPushToken(@Param('id') id: string, @Body() updateUserTokenDto: UpdateUserTokenDto) {
-    console.log(updateUserTokenDto.pushToken)
     return this.userService.updateUserPushToken(id, updateUserTokenDto)
   }
 
