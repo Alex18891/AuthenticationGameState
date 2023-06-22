@@ -11,7 +11,7 @@ export class User extends Document {
     email: string;
     @Prop({ required: false })
     country: string;
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, type: String })
     pushToken: string;
 }
 
