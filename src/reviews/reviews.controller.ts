@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { SearchReviewDto } from './dto/search-review.dto';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -10,6 +11,11 @@ export class ReviewsController {
   @Post('create')
   create(@Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(createReviewDto);
+  }
+
+  @Post('getreviewsbyuser')
+  searchReview(@Body() searchReviewDto: SearchReviewDto) {
+    return this.reviewsService.search(searchReviewDto);
   }
 
   @Get()

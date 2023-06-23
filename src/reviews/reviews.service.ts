@@ -5,6 +5,21 @@ import { Review } from './schemas/review.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
+import { SearchReviewDto } from './dto/search-review.dto';
+
+const apiKey = '9c00b654361b4202be900194835b8665';
+
+const searchGamesByID = async (ID) => {
+  const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data;
+};  
+
+const allgames = async()=>{
+  const url = `https://api.rawg.io/api/games?key=${apiKey}`
+  return fetch(url).then((response) => response.json()).then((data) => data.results);
+};
 
 @Injectable()
 export class ReviewsService {
@@ -21,6 +36,27 @@ export class ReviewsService {
       return {status:400, message: "Fill all fields" };
     }
 
+  }
+
+  async search(searchReviewDto: SearchReviewDto) {
+    const user_id = searchReviewDto.user_id
+
+    const reviews = await this.ReviewModel.find({ user_id: user_id }).sort({'createdAt': -1}).select('forum_id rating gameStatus').limit(6);
+    const subscribedgames = []
+    const ratings = []
+    const gamesStatus = []
+
+    for (const review of reviews) {
+        const gameID = review.forum_id
+        const rating = review.rating
+        const gameStatus = review.gameStatus
+        const reviewGamesID = await searchGamesByID(gameID);
+        const gameImage = reviewGamesID.background_image
+        subscribedgames.push(gameImage, gameID)
+        ratings.push(rating)
+        gamesStatus.push(gameStatus)
+    }
+    return { status: 200, subscribedgames: { subscribedgames: subscribedgames }, ratings: {ratings: ratings}, gameStatus: {gameStatus: gamesStatus}};
   }
 
   findAll() {
