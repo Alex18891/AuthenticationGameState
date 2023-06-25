@@ -2,7 +2,7 @@ import { Injectable, flatten } from '@nestjs/common';
 import { SearchGameDto } from './dto/search-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 
-const apiKey = '9c00b654361b4202be900194835b8665';
+const apiKey = '50cf30549e214193975160de0871baf0';
 
 const searchGames = async (searchText) => {
   const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${searchText}&search_exact=true&ordering=-metacritic`
@@ -70,12 +70,12 @@ export class GameService {
       return { status: 404, message: "Game not found" };
     }
     else{
-      const { name, id, developers, released: release_date, background_image: image, description, platforms } = game;
+      const { name, id, developers, released: release_date, background_image: image,background_image_additional:imageadd,ratings_count, description, platforms } = game;
       const developerNames = developers.map((developer) => ({
         name: developer.name,
         image: developer.image_background
       }));
-      return { status: 200, message:{ name, id, developers: developerNames, release_date, image, description, platforms }}
+      return { status: 200, message:{ name, id, developers: developerNames, release_date, image, description, platforms,imageadd,ratings_count }}
     }
   }
 
