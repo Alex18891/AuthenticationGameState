@@ -80,7 +80,7 @@ export class TopicService {
 
   async searchTopicByID(searchTopicIDDto) {
     const topic_id = searchTopicIDDto.topic_id;
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
   
     const modifiedComments = [];
   

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { GameService } from './game.service';
 import { SearchGameDto } from './dto/search-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
@@ -15,6 +15,11 @@ export class GameController {
   @Post('searchbyid')
   searchByID(@Body() searchGameDto: SearchGameDto) {
     return this.gameService.searchGameByID(searchGameDto);
+  }
+
+  @Get()
+  findbyReleaseDate(@Query('ordering') ordering: String) {
+    return this.gameService.findByReleaseDate(ordering);
   }
 
   @Get()

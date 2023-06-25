@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, Length, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, Length, MinLength,  } from 'class-validator';
 
 export class CreateUserDto {
     @Length(1, 20)
@@ -13,4 +13,6 @@ export class CreateUserDto {
     @IsOptional()
     @MinLength(2)
     country: string;
+
+    pushToken: string;
 }

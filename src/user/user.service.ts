@@ -7,6 +7,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -31,7 +32,6 @@ export class UserService {
     else{
       return {status:203, message: "Username or email already exists" };
     }
-   
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -134,6 +134,25 @@ export class UserService {
       return { status:200 };
     } catch (error) {
       return { status:400, message: "Something went wrong"};
+    }
+  }
+
+  async searchUserByID(id: string) {
+    const user = await this.UserModel.findOne({_id: id}).select('pushToken -_id')
+    if (user) {
+      return { status: 200, message: {user} }
+    } else {
+      return { status: 203, message: "User not found"}
+    }
+  }
+
+  async updateUserPushToken(id: string, updateUserTokenDto: UpdateUserTokenDto) {
+    const pushToken = updateUserTokenDto.pushToken
+    const user = await this.UserModel.findOneAndUpdate({_id: id}, {pushToken: pushToken})
+    if (user) {
+      return { status: 200, message: "Token updated" }
+    } else {
+      return { status: 203, message: "User not found"}
     }
   }
 }
