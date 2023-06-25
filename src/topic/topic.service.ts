@@ -7,7 +7,6 @@ import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { Topic } from './schemas/topic.schema';
 import { SearchTopicDto } from './dto/search-topic.dto';
-import { SearchTopicIDDto } from './dto/search-topic-id.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { LikeDislikeTopicDto } from './dto/like-dislike-topic.dto';
 

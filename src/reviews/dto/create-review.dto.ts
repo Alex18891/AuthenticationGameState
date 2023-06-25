@@ -1,5 +1,8 @@
-export class CreateReviewDto {
+import { Max, Min } from "class-validator";
 
+export class CreateReviewDto {
+    @Min(0)
+    @Max(10)
     rating: number;
 
     title: string;
