@@ -8,7 +8,6 @@ import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { SearchReviewDto } from './dto/search-review.dto';
 
-
 const apiKey = '9c00b654361b4202be900194835b8665';
 
 const searchGamesByID = async (ID) => {
@@ -16,6 +15,11 @@ const searchGamesByID = async (ID) => {
   const response = await fetch(url);
   const data = await response.json();
   return data;
+};  
+
+const allgames = async()=>{
+  const url = `https://api.rawg.io/api/games?key=${apiKey}`
+  return fetch(url).then((response) => response.json()).then((data) => data.results);
 };
 
 @Injectable()
@@ -25,7 +29,7 @@ export class ReviewsService {
   create(createReviewDto: CreateReviewDto) {
     const rating = createReviewDto.rating;
 
-    if (rating) {
+    if (rating >= 0 && rating <= 10) {
       const review = new this.ReviewModel(createReviewDto);
       review.save();
       return {status:200, message: "Game added!"};
@@ -34,6 +38,27 @@ export class ReviewsService {
       return {status:400, message: "Fill all fields" };
     }
 
+  }
+
+  async search(searchReviewDto: SearchReviewDto) {
+    const user_id = searchReviewDto.user_id
+
+    const reviews = await this.ReviewModel.find({ user_id: user_id }).sort({'createdAt': -1}).select('forum_id rating gameStatus').limit(6);
+    const subscribedgames = []
+    const ratings = []
+    const gamesStatus = []
+
+    for (const review of reviews) {
+        const gameID = review.forum_id
+        const rating = review.rating
+        const gameStatus = review.gameStatus
+        const reviewGamesID = await searchGamesByID(gameID);
+        const gameImage = reviewGamesID.background_image
+        subscribedgames.push(gameImage, gameID)
+        ratings.push(rating)
+        gamesStatus.push(gameStatus)
+    }
+    return { status: 200, subscribedgames: { subscribedgames: subscribedgames }, ratings: {ratings: ratings}, gameStatus: {gameStatus: gamesStatus}};
   }
 
   async searchReviewByGame(id: number) {
@@ -57,9 +82,9 @@ export class ReviewsService {
 
   
   async searchReviewByUser(searchreviewDto: SearchReviewDto) {
-    const username = searchreviewDto.username;
+    const id = searchreviewDto.user_id;
 
-    const user = await this.UserModel.findOne({ username: username });
+    const user = await this.UserModel.findOne({ _id: id });
     if (!user) {
       return { status: 203, message: "User not found" };
     }
@@ -70,7 +95,7 @@ export class ReviewsService {
     {
       for (const review of reviews) {
         const game = await searchGamesByID(review.forum_id);
-        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image,forum_id:review.forum_id})
+        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
       }
   
       return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}

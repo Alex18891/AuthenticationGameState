@@ -13,9 +13,9 @@ export class ReviewsController {
     return this.reviewsService.create(createReviewDto);
   }
 
-  @Get()
-  findAll() {
-    return this.reviewsService.findAll();
+  @Post('getreviewsbyuser')
+  searchReview(@Body() searchReviewDto: SearchReviewDto) {
+    return this.reviewsService.search(searchReviewDto);
   }
 
   @Get('searchbyid/:gameID')
@@ -26,6 +26,11 @@ export class ReviewsController {
   @Post('searchbyuser')
   searchReviewByUser(@Body() searchreviewDto: SearchReviewDto) {
     return this.reviewsService.searchReviewByUser(searchreviewDto)
+  }
+
+  @Get()
+  findAll() {
+    return this.reviewsService.findAll();
   }
 
   @Get(':id')

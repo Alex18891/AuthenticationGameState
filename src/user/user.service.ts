@@ -46,7 +46,7 @@ export class UserService {
     const passwordvalid = await bcrypt.compare(password, userdb.password);
 
     if (passwordvalid) {
-      return { status: 200, message: "User logged in",id:userdb._id }
+      return { status: 200, message: "User logged in", id:userdb._id, username:userdb.username }
     } else {
       return { status: 400, message: "Wrong password" }
     }
