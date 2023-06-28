@@ -80,8 +80,9 @@ export class TopicService {
 
   async searchTopicByID(searchTopicIDDto) {
     const topic_id = searchTopicIDDto.topic_id;
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
-  
+    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id createdAt name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
+    const user = await this.UserModel.findById(topics.user_id); 
+    const username = user.username;
     const modifiedComments = [];
   
     for (const comment of topics.comments) {
@@ -93,6 +94,7 @@ export class TopicService {
   
     const modifiedTopics = {
       ...topics,
+      username, 
       comments: modifiedComments
     };
   
