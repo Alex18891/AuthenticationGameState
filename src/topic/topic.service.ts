@@ -52,6 +52,7 @@ export class TopicService {
 
     const topics = await this.TopicModel.find({ user_id: user._id }).select('_id name forum_id comments');
     const images = [];
+    const names = [];
     const commentsbytopicos = []
 
     for (const topic of topics) {
@@ -59,13 +60,15 @@ export class TopicService {
       const forumID = topic.forum_id;
       const comments = topic.comments;
       const game = await searchGamesByID(forumID);
-      const { background_image: image,id:gameid } = game;
+      const { background_image: image, _id:gameid, name: name } = game;
       
       for(const comment of comments)
       { 
         const user = await this.UserModel.findById(comment.user_id); 
         commentsbytopicos.push({username:user.username,topicid:topic.id,gameid:gameid,image:image,createdAt: comment.createdAt});
       }  
+
+      names.push(name);
 
       
       if (image) {
@@ -75,7 +78,7 @@ export class TopicService {
         images.push(defaultImage);
       }
     }
-    return { status: 200, message: { topics, images,commentsbytopicos} };
+    return { status: 200, message: { topics, images, names, commentsbytopicos} };
   }
 
   async searchTopicByID(searchTopicIDDto) {
