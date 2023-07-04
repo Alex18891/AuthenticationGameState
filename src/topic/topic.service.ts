@@ -50,7 +50,7 @@ export class TopicService {
       return { status: 203, message: "User not found" };
     }
 
-    const topics = await this.TopicModel.find({ user_id: user._id }).select('_id name forum_id comments');
+    const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments');
     const images = [];
     const names = [];
     const commentsbytopicos = []

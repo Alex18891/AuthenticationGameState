@@ -139,8 +139,9 @@ export class UserService {
 
   async searchUserByID(id: string) {
     const user = await this.UserModel.findOne({_id: id}).select('pushToken -_id')
+    const userforeal = await this.UserModel.findOne({_id: id})
     if (user) {
-      return { status: 200, message: {user} }
+      return { status: 200, message: {user,createdAt: userforeal.createdAt,country:userforeal.country} }
     } else {
       return { status: 203, message: "User not found"}
     }

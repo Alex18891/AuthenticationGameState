@@ -95,7 +95,7 @@ export class ReviewsService {
     {
       for (const review of reviews) {
         const game = await searchGamesByID(review.forum_id);
-        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
+        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,createdAt: review.createdAt,text:review.text,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
       }
   
       return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}

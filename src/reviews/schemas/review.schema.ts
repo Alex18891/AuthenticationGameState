@@ -15,6 +15,12 @@ export class Review extends Document {
     title: string;
     @Prop({ type: Number, required: false })
     gameStatus: number;
+    get createdAt(): Date {
+        return this.createdAt;
+      }
+    get updatedAt(): Date {
+    return this.updatedAt;
+    }
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

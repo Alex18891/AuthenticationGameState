@@ -2,7 +2,7 @@ import { Injectable, flatten } from '@nestjs/common';
 import { SearchGameDto } from './dto/search-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 
-const apiKey = '50cf30549e214193975160de0871baf0';
+const apiKey = '1260124e75cb49e2ad9c2dba5ec02e3a';
 
 const searchGames = async (searchText) => {
   const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${searchText}&search_exact=true&ordering=-metacritic`
