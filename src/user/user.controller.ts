@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/forgotpwd-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
+import { WishlistDto } from './dto/wishlist.dto';
 
 @Controller('user')
 export class UserController {
@@ -43,6 +44,16 @@ export class UserController {
 
   @Get(':id')
   searchUserByID(@Param('id') id: string) {
-    return this.userService.searchUserByID(id)
+    return this.userService.searchUserByID(id);
+  }
+
+  @Post(':id/wishlist')
+  addWishlistItem(@Body() wishlistDto: WishlistDto, @Param('id') id: string) {
+    return this.userService.addWishlistItem(wishlistDto, id);
+  }
+
+  @Delete(':id/wishlist/:gameID')
+  deleteWishlistItem(@Param('id') userID: string, @Param('gameID') gameID: number) {
+    return this.userService.removeWishlistItem(userID, gameID);
   }
 }

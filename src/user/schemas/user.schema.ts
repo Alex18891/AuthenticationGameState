@@ -13,6 +13,8 @@ export class User extends Document {
     country: string;
     @Prop({ required: false, type: String })
     pushToken: string;
+    @Prop({ required: false, type: Array})
+    wishlist: number[];
     get createdAt(): Date {
         return this.createdAt;
       }
