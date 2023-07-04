@@ -105,8 +105,14 @@ export class ReviewsService {
     } 
   }
 
-  findAll() {
-    return `This action returns all reviews`;
+  async findAll(ordering: String) {
+    if(ordering === "releasedate") {
+      const reviews = await this.ReviewModel.find({}).sort({createdAt: 'descending'});
+      return {status: 200, message: reviews};
+    } else {
+      const reviews = await this.ReviewModel.find({});
+      return {status: 200, message: reviews};
+    }
   }
 
   findOne(id: number) {
