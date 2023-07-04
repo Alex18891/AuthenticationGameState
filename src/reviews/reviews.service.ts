@@ -73,7 +73,7 @@ export class ReviewsService {
            
       }
   
-      return {status: 200, message: "Reviews searched successfully", reviewsgame}
+      return {status: 200, message: "Reviews searched successfully", reviewsgame,numberOfReviews: reviews.length}
     }
     else{
       return {status: 203, message: "Reviews not found"}
