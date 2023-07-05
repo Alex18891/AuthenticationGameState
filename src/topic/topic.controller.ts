@@ -18,33 +18,39 @@ export class TopicController {
   }
 
   @Post('searchbyid')
-  searchTopicByUser(@Body() searchTopicDto: SearchTopicDto) {
-    return this.topicService.searchTopicByUser(searchTopicDto);
+  searchTopicByUser(@Headers('authorization') authorizationHeader: string, @Body() searchTopicDto: SearchTopicDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.searchTopicByUser(token,searchTopicDto);
   }
 
   @Post('searchbytopicid')
-  searchTopicByID(@Body() searchTopicIDDto: SearchTopicIDDto) {
-    return this.topicService.searchTopicByID(searchTopicIDDto);
+  searchTopicByID(@Headers('authorization') authorizationHeader: string, @Body() searchTopicIDDto: SearchTopicIDDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.searchTopicByID(token,searchTopicIDDto);
   }
 
   @Post('createcomment')
-  createComment(@Body() createCommentDto: CreateCommentDto) {
-    return this.topicService.createComment(createCommentDto);
+  createComment(@Headers('authorization') authorizationHeader: string,@Body() createCommentDto: CreateCommentDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.createComment(token,createCommentDto);
   }
 
   @Post('likedislike')
-  likeTopic(@Body() likeDislikeTopicDto: LikeDislikeTopicDto) {
-    return this.topicService.likeDislikeTopic(likeDislikeTopicDto);
+  likeTopic(@Headers('authorization') authorizationHeader: string,@Body() likeDislikeTopicDto: LikeDislikeTopicDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.likeDislikeTopic(token,likeDislikeTopicDto);
   }
 
   @Get('searchbygameid/:gameID')
-  searchTopicByGame(@Param('gameID') id: string) {
-    return this.topicService.searchTopicByGame(+id)
+  searchTopicByGame(@Headers('authorization') authorizationHeader: string,@Param('gameID') id: string) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.searchTopicByGame(token,+id)
   }
 
   @Get()
-  findAll() {
-    return this.topicService.findAll();
+  findAll(@Headers('authorization') authorizationHeader: string) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.findAll(token);
   }
 
   @Get(':id')
