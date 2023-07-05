@@ -44,13 +44,9 @@ export class UserController {
   }
 
   @Get(':id')
-<<<<<<< HEAD
   searchUserByID(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
     const token = authorizationHeader.replace('Bearer ', '');
     return this.userService.searchUserByID(token, id)
-=======
-  searchUserByID(@Param('id') id: string) {
-    return this.userService.searchUserByID(id);
   }
 
   @Post(':id/wishlist')
@@ -61,6 +57,5 @@ export class UserController {
   @Delete(':id/wishlist/:gameID')
   deleteWishlistItem(@Param('id') userID: string, @Param('gameID') gameID: number) {
     return this.userService.removeWishlistItem(userID, gameID);
->>>>>>> origin/wishlist
   }
 }
