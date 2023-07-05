@@ -8,6 +8,8 @@ import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { SearchReviewDto } from './dto/search-review.dto';
 
+const jwt = require('jsonwebtoken');
+
 const apiKey = '9c00b654361b4202be900194835b8665';
 
 const searchGamesByID = async (ID) => {
@@ -26,13 +28,18 @@ const allgames = async()=>{
 export class ReviewsService {
   constructor(@InjectModel(User.name) private UserModel: Model<User>,private configUserService: ConfigService,
   @InjectModel(Review.name) private ReviewModel: Model<Review>, private configReviewService: ConfigService) {}
-  create(createReviewDto: CreateReviewDto) {
+  create(token: string, createReviewDto: CreateReviewDto) {
     const rating = createReviewDto.rating;
 
     if (rating >= 0 && rating <= 10) {
-      const review = new this.ReviewModel(createReviewDto);
-      review.save();
-      return {status:200, message: "Game added!"};
+      try {
+        jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
+        const review = new this.ReviewModel(createReviewDto);
+        review.save();
+        return {status:200, message: "Game added!"};
+      } catch (error) {
+        return { status: 500, error: error }
+      }
     }
     else{
       return {status:400, message: "Fill all fields" };
@@ -40,40 +47,51 @@ export class ReviewsService {
 
   }
 
-  async search(searchReviewDto: SearchReviewDto) {
+  async search(token: string, searchReviewDto: SearchReviewDto) {
     const user_id = searchReviewDto.user_id
 
-    const reviews = await this.ReviewModel.find({ user_id: user_id }).sort({'createdAt': -1}).select('forum_id rating gameStatus').limit(6);
-    const subscribedgames = []
-    const ratings = []
-    const gamesStatus = []
+    try {
+      jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
 
-    for (const review of reviews) {
-        const gameID = review.forum_id
-        const rating = review.rating
-        const gameStatus = review.gameStatus
-        const reviewGamesID = await searchGamesByID(gameID);
-        const gameImage = reviewGamesID.background_image
-        subscribedgames.push(gameImage, gameID)
-        ratings.push(rating)
-        gamesStatus.push(gameStatus)
+      const reviews = await this.ReviewModel.find({ user_id: user_id }).sort({'createdAt': -1}).select('forum_id rating gameStatus').limit(6);
+      const subscribedgames = []
+      const ratings = []
+      const gamesStatus = []
+
+      for (const review of reviews) {
+          const gameID = review.forum_id
+          const rating = review.rating
+          const gameStatus = review.gameStatus
+          const reviewGamesID = await searchGamesByID(gameID);
+          const gameImage = reviewGamesID.background_image
+          subscribedgames.push(gameImage, gameID)
+          ratings.push(rating)
+          gamesStatus.push(gameStatus)
+
+          return { status: 200, subscribedgames: { subscribedgames: subscribedgames }, ratings: {ratings: ratings}, gameStatus: {gameStatus: gamesStatus}};
+      }
+    } catch (error) {
+      return { status: 500, error: error }
     }
-    return { status: 200, subscribedgames: { subscribedgames: subscribedgames }, ratings: {ratings: ratings}, gameStatus: {gameStatus: gamesStatus}};
   }
 
-  async searchReviewByGame(id: number) {
+  async searchReviewByGame(token: string, id: number) {
     const reviews = await this.ReviewModel.find({forum_id: id})
     const game = await searchGamesByID(id);
     const reviewsgame= [];
     if(reviews.length!=0 )
     {
-      for (const review of reviews) {
-        const user = await this.UserModel.findById(review.user_id); 
-        reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
-           
+      try {
+        jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
+        for (const review of reviews) {
+          const user = await this.UserModel.findById(review.user_id); 
+          reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
+            
+        }
+        return {status: 200, message: "Reviews searched successfully", reviewsgame,numberOfReviews: reviews.length}
+      } catch (error) {
+        return { status: 500, error: error }
       }
-  
-      return {status: 200, message: "Reviews searched successfully", reviewsgame,numberOfReviews: reviews.length}
     }
     else{
       return {status: 203, message: "Reviews not found"}
@@ -81,28 +99,33 @@ export class ReviewsService {
   }
 
   
-  async searchReviewByUser(searchreviewDto: SearchReviewDto) {
+  async searchReviewByUser(token: string, searchreviewDto: SearchReviewDto) {
     const id = searchreviewDto.user_id;
 
-    const user = await this.UserModel.findOne({ _id: id });
-    if (!user) {
-      return { status: 203, message: "User not found" };
-    }
-    const reviews = await this.ReviewModel.find({user_id:user._id})
-    
-    const reviewsbyusernames= [];
-    if(reviews.length!=0 )
-    {
-      for (const review of reviews) {
-        const game = await searchGamesByID(review.forum_id);
-        reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,createdAt: review.createdAt,text:review.text,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
+    try {
+      jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findOne({ _id: id });
+      if (!user) {
+        return { status: 203, message: "User not found" };
       }
-  
-      return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}
+      const reviews = await this.ReviewModel.find({user_id:user._id})
+      
+      const reviewsbyusernames= [];
+      if(reviews.length!=0 )
+      {
+        for (const review of reviews) {
+          const game = await searchGamesByID(review.forum_id);
+          reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,createdAt: review.createdAt,text:review.text,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
+        }
+    
+        return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}
+      }
+      else{
+        return {status: 203, message: "Reviews not found"}
+      } 
+    } catch (error) {
+      return { status: 500, error: error }
     }
-    else{
-      return {status: 203, message: "Reviews not found"}
-    } 
   }
 
   findAll() {

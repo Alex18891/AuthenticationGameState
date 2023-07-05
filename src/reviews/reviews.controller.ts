@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -9,23 +9,27 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post('create')
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewsService.create(createReviewDto);
+  create(@Headers('authorization') authorizationHeader: string, @Body() createReviewDto: CreateReviewDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.reviewsService.create(token, createReviewDto);
   }
 
   @Post('getreviewsbyuser')
-  searchReview(@Body() searchReviewDto: SearchReviewDto) {
-    return this.reviewsService.search(searchReviewDto);
+  searchReview(@Headers('authorization') authorizationHeader: string, @Body() searchReviewDto: SearchReviewDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.reviewsService.search(token, searchReviewDto);
   }
 
   @Get('searchbyid/:gameID')
-  searchReviewByGame(@Param('gameID') id: string) {
-    return this.reviewsService.searchReviewByGame(+id)
+  searchReviewByGame(@Headers('authorization') authorizationHeader: string, @Param('gameID') id: string) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.reviewsService.searchReviewByGame(token, +id)
   }
 
   @Post('searchbyuser')
-  searchReviewByUser(@Body() searchreviewDto: SearchReviewDto) {
-    return this.reviewsService.searchReviewByUser(searchreviewDto)
+  searchReviewByUser(@Headers('authorization') authorizationHeader: string, @Body() searchreviewDto: SearchReviewDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.reviewsService.searchReviewByUser(token, searchreviewDto)
   }
 
   @Get()
