@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
+import { WishlistDto } from './dto/wishlist.dto';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -178,7 +179,45 @@ export class UserService {
         return { status: 500, error: error }
       }
     } else {
-      return { status: 203, message: "User not found"}
+      return { status: 203, message: "User not found" }
+    }
+  }
+
+  async addWishlistItem(wishlistDto: WishlistDto, id: string) {
+    const user = await this.UserModel.findByIdAndUpdate(id);
+    if (!user) {
+      return { status: 203, message: "User not found" };
+    } else if(user && user.wishlist)
+    {
+      if (!user.wishlist.includes(wishlistDto.game_id)) {
+        const userWishlist = await this.UserModel.findByIdAndUpdate(id, { $push: { wishlist: wishlistDto.game_id}}, { new: true });
+        return { status: 201, message: "Game added to wishlist", user: userWishlist };
+      }
+      else {
+        return { status: 409, message: "Game already in the wishlist"};
+      }
+    } else
+    {
+      const userWishlist = await this.UserModel.findByIdAndUpdate(id, { $push: { wishlist: wishlistDto.game_id}}, { new: true });
+      return { status: 201, message: "Game added to wishlist", user: userWishlist };
+    }
+  }
+
+  async removeWishlistItem(userID: string, gameID: number) {
+    const user = await this.UserModel.findByIdAndUpdate(userID);
+    if (!user) {
+      return { status: 203, message: "User not found" };
+    } else if(user && user.wishlist)
+    {
+      if (!user.wishlist.includes(gameID))
+        return { status: 404, message: "Game not found in the wishlist"};
+      else {
+        await this.UserModel.findByIdAndUpdate(userID, { $pull: { wishlist: gameID}}, { new: true });
+        return { status: 204, message: "Game removed from wishlist"};
+      }
+    } else
+    {
+      return { status: 404, message: "Game not found in the wishlist"}
     }
   }
 }
