@@ -1,29 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTopicDto } from './dto/create-topic.dto';
-import { UpdateTopicDto } from './dto/update-topic.dto';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { Topic } from './schemas/topic.schema';
-import { SearchTopicDto } from './dto/search-topic.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { LikeDislikeTopicDto } from './dto/like-dislike-topic.dto';
 
 const jwt = require('jsonwebtoken');
 
-const apiKey = '9c00b654361b4202be900194835b8665';
-
-const searchGamesByID = async (ID) => {
-  const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  return data;
-};
-
 @Injectable()
 export class TopicService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>, private configUserService: ConfigService, 
+  constructor(@InjectModel(User.name) private UserModel: Model<User>, 
   @InjectModel(Topic.name) private TopicModel: Model<Topic>, private configTopicService: ConfigService) { }
   async create(token: string, createTopicDto: CreateTopicDto) {
     const name = createTopicDto.name;
@@ -36,7 +25,7 @@ export class TopicService {
         jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
         const topic = new this.TopicModel(createTopicDto);
       topic.save();
-      await this.TopicModel.findOneAndUpdate({name: name}, {
+      await this.TopicModel.findOneAndUpdate({_id: topic._id}, {
         $set: {'likeDislike': {'username': username, 'likeDislike': likeDislike} }
       });
       return {status:200, message: "Topic Created"};
@@ -49,72 +38,29 @@ export class TopicService {
     }
   }
 
-  async searchTopicByUser(token: string,searchTopicDto: SearchTopicDto) {
-    const username = searchTopicDto.username;
+  async searchTopicsByID(token: string, id: string) {
     try {
       jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
-      const user = await this.UserModel.findOne({ username: username });
-      if (!user) {
-        return { status: 203, message: "User not found" };
+      const topics = await this.TopicModel.findOne({ _id: id }).select('topic_id createdAt name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
+      const user = await this.UserModel.findById(topics.user_id); 
+      const username = user.username;
+      const modifiedComments = [];
+    
+      for (const comment of topics.comments) {
+        const username = await this.UserModel.findOne({ _id: comment.user_id }).select('username -_id');
+    
+        const modifiedComment = { ...comment, username: username.username };
+        modifiedComments.push(modifiedComment);
       }
-      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments');
-      const images = [];
-      const names = [];
-      const commentsbytopicos = []
-
-      for (const topic of topics) {
-        
-        const forumID = topic.forum_id;
-        const comments = topic.comments;
-        const game = await searchGamesByID(forumID);
-        const { background_image: image, _id:gameid, name: name } = game;
-        
-        for(const comment of comments)
-        { 
-          const user = await this.UserModel.findById(comment.user_id); 
-          commentsbytopicos.push({username:user.username,topicid:topic.id,gameid:gameid,image:image,createdAt: comment.createdAt});
-        }  
-
-        names.push(name);
-
-        
-        if (image) {
-          images.push(image);
-        } else {
-          const defaultImage = "null";
-          images.push(defaultImage);
-        }
-      }
-      return { status: 200, message: { topics, images, names, commentsbytopicos} };
-    }catch (error) {
-      return { status: 500, error: error }
-    }
-  }
-
-  async searchTopicByID(token: string,searchTopicIDDto) {
-    const topic_id = searchTopicIDDto.topic_id;
-    try {
-      jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
-    const topics = await this.TopicModel.findOne({ _id: topic_id }).select('topic_id createdAt name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
-    const user = await this.UserModel.findById(topics.user_id); 
-    const username = user.username;
-    const modifiedComments = [];
-  
-    for (const comment of topics.comments) {
-      const username = await this.UserModel.findOne({ _id: comment.user_id }).select('username -_id');
-  
-      const modifiedComment = { ...comment, username: username.username };
-      modifiedComments.push(modifiedComment);
-    }
-  
-    const modifiedTopics = {
-      ...topics,
-      username, 
-      comments: modifiedComments
-    };
+    
+      const modifiedTopics = {
+        ...topics,
+        username, 
+        comments: modifiedComments
+      };
   
     return { status: 200, message: { topics: modifiedTopics } };
-  }catch (error) {
+  } catch (error) {
     return { status: 500, error: error }
   }
   }
@@ -141,12 +87,12 @@ export class TopicService {
     }
   }
 
-  async findAll(token: string,) {
+  async search(token: string) {
     try {
       jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
-    const topics = await this.TopicModel.find({}, {name: 1, _id: 1})
-    return {status: 200, message: "Topics searched successfully", topics}
-    }catch (error) {
+      const topics = await this.TopicModel.find({}, {name: 1, _id: 1})
+      return {status: 200, message: "Topics searched successfully", topics}
+    } catch (error) {
       return { status: 500, error: error }
     }
   }
@@ -182,27 +128,5 @@ export class TopicService {
     }catch (error) {
       return { status: 500, error: error }
     }
-  }
-
-  async searchTopicByGame(token: string,id: number) {
-    try {
-      jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
-      const topics = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1})
-      return {status: 200, message: "Topics searched successfully", topics}
-    }catch (error) {
-      return { status: 500, error: error }
-    }
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} topic`;
-  }
-
-  update(id: number, updateTopicDto: UpdateTopicDto) {
-    return `This action updates a #${id} topic`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} topic`;
   }
 }

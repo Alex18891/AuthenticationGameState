@@ -9,14 +9,25 @@ import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
 import { WishlistDto } from './dto/wishlist.dto';
+import { Review } from '../reviews/schemas/review.schema';
+import { Topic } from 'src/topic/schemas/topic.schema';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require("nodemailer");
 
+const apiKey = '9c00b654361b4202be900194835b8665';
+
+const searchGamesByID = async (ID) => {
+  const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data;
+};  
+
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>, private configService: ConfigService) { }
+  constructor(@InjectModel(User.name) private UserModel: Model<User>, @InjectModel(Review.name) private ReviewModel: Model<Review>, @InjectModel(Topic.name) private TopicModel: Model<Topic>, private configService: ConfigService) { }
   async create(createUserDto: CreateUserDto) {
     const password = createUserDto.password;
     const email = createUserDto.email;
@@ -184,9 +195,9 @@ export class UserService {
   }
 
   async addWishlistItem(token: string, wishlistDto: WishlistDto, id: string) {
-    const user = await this.UserModel.findByIdAndUpdate(id);
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findByIdAndUpdate(id);
       if (!user) {
         return { status: 203, message: "User not found" };
       } else if(user && user.wishlist)
@@ -208,18 +219,18 @@ export class UserService {
     }
   }
 
-  async removeWishlistItem(token: string, userID: string, gameID: number) {
-    const user = await this.UserModel.findByIdAndUpdate(userID);
+  async removeWishlistItem(token: string, userId: string, gameId: number) {
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findByIdAndUpdate(userId);
       if (!user) {
         return { status: 203, message: "User not found" };
       } else if(user && user.wishlist)
       {
-        if (!user.wishlist.includes(gameID))
+        if (!user.wishlist.includes(gameId))
           return { status: 404, message: "Game not found in the wishlist"};
         else {
-          await this.UserModel.findByIdAndUpdate(userID, { $pull: { wishlist: gameID}}, { new: true });
+          await this.UserModel.findByIdAndUpdate(userId, { $pull: { wishlist: gameId}}, { new: true });
           return { status: 204, message: "Game removed from wishlist"};
         }
       } else
@@ -227,6 +238,106 @@ export class UserService {
         return { status: 404, message: "Game not found in the wishlist"}
       }
     } catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
+  async searchReviewsByUser(token: string, id: string) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findOne({ _id: id });
+      if (!user) {
+        return { status: 203, message: "User not found" };
+      }
+      const reviews = await this.ReviewModel.find({user_id:user._id})
+      
+      const reviewsbyusernames= [];
+      if(reviews.length!=0 )
+      {
+        for (const review of reviews) {
+          const game = await searchGamesByID(review.forum_id);
+          reviewsbyusernames.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,createdAt: review.createdAt,text:review.text,image:game.background_image,game_name:game.name,forum_id:review.forum_id})
+        }
+    
+        return {status: 200, message: "Reviews searched successfully",reviewsbyusernames}
+      }
+      else{
+        return {status: 203, message: "Reviews not found"}
+      } 
+    } catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
+  async searchSubscribedGames(token: string, id: string) {
+    
+    try {
+      await this.UserModel.findOne({ _id: id })
+    } catch (error) {
+      return { status: 500, error: error }
+    }
+
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+
+      const reviews = await this.ReviewModel.find({ user_id: id }).sort({'createdAt': -1}).select('forum_id rating gameStatus').limit(6);
+      const subscribedgames = []
+      const ratings = []
+      const gamesStatus = []
+
+      for (const review of reviews) {
+          const gameID = review.forum_id
+          const rating = review.rating
+          const gameStatus = review.gameStatus
+          const reviewGamesID = await searchGamesByID(gameID);
+          const gameImage = reviewGamesID.background_image
+          subscribedgames.push(gameImage, gameID)
+          ratings.push(rating)
+          gamesStatus.push(gameStatus)
+      }
+      return { status: 200, subscribedgames: { subscribedgames: subscribedgames }, ratings: {ratings: ratings}, gameStatus: {gameStatus: gamesStatus}};
+    } catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
+  async searchTopicsByUser(token: string, username: string) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findOne({ username: username });
+      if (!user) {
+        return { status: 203, message: "User not found" };
+      }
+      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments');
+      const images = [];
+      const names = [];
+      const commentsbytopicos = []
+
+      for (const topic of topics) {
+        
+        const forumID = topic.forum_id;
+        const comments = topic.comments;
+        const game = await searchGamesByID(forumID);
+        const { background_image: image, _id:gameid, name: name } = game;
+        
+        for(const comment of comments)
+        { 
+          const user = await this.UserModel.findById(comment.user_id); 
+          commentsbytopicos.push({username:user.username,topicid:topic.id,gameid:gameid,image:image,createdAt: comment.createdAt});
+        }  
+
+        names.push(name);
+
+        
+        if (image) {
+          images.push(image);
+        } else {
+          const defaultImage = "null";
+          images.push(defaultImage);
+        }
+      }
+      return { status: 200, message: { topics, images, names, commentsbytopicos} };
+    }catch (error) {
       return { status: 500, error: error }
     }
   }

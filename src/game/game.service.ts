@@ -1,6 +1,12 @@
-import { Injectable, flatten } from '@nestjs/common';
-import { SearchGameDto } from './dto/search-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Review } from 'src/reviews/schemas/review.schema';
+import { Topic } from 'src/topic/schemas/topic.schema';
+import { User } from 'src/user/schemas/user.schema';
+
+const jwt = require('jsonwebtoken');
 
 const apiKey = '1260124e75cb49e2ad9c2dba5ec02e3a';
 
@@ -38,47 +44,76 @@ const allgames = async()=>{
 
 @Injectable()
 export class GameService {
-  async searchgame(searchGameDto:SearchGameDto) {
-    const search = searchGameDto.name;
-    const games = await searchGames(search);
-    const namegame = games.map(function(game) {
-      return game.name;
-    })
-    const idgame = games.map(function(game) {
-      return game.id;
-    })
-    const allinformationgames = await allgames();
-    const metacritic = allinformationgames.map((game)=> ({
-      background_img: game.background_image,
-      id:game.id
-    }))
-    const populargames = []
-    let tamanho = 6;
-    for(let l=0;l<tamanho; l++)
-    {
-      const background_img = metacritic[l].background_img;  
-      const id = metacritic[l].id; 
-      if(background_img!=null)
+  constructor(@InjectModel(Review.name) private ReviewModel: Model<Review>, @InjectModel(User.name) private UserModel: Model<User>, @InjectModel(Topic.name) private TopicModel: Model<User>, private configService: ConfigService) { }
+  async search(search: string, ordering: string) {
+    var gamesOrder = null;
+    if (ordering == "releasedate") { //Order filter verification
+      gamesOrder = await searchGamesByReleaseDate(1);
+      const results = gamesOrder.results.slice(0, 6); //limit to 6 games
+      const gameInformation = results.map(game => {
+        return {
+          id: game.id,
+          name: game.name,
+          released: game.released,
+          image: game.background_image
+        };
+      });
+      return { status: 200, message: gameInformation }
+    } else if (ordering == "-releasedate") { //Order filter verification
+      gamesOrder = await searchGamesByReleaseDate(-1);
+      const results = gamesOrder.results.slice(0, 6); //limit to 6 games
+      const gameInformation = results.map(game => {
+        return {
+          id: game.id,
+          name: game.name,
+          released: game.released,
+          image: game.background_image
+        };
+      });
+      return { status: 200, message: gameInformation }
+    } else { //If ordering filter does not exist (normal search)
+      const games = await searchGames(search);
+
+      const namegame = games.map(function(game) {
+        return game.name;
+      })
+  
+      const idgame = games.map(function(game) {
+        return game.id;
+      })
+  
+      const allinformationgames = await allgames();
+      const metacritic = allinformationgames.map((game)=> ({
+        background_img: game.background_image,
+        id:game.id
+      }))
+      const populargames = []
+      let tamanho = 6;
+      for(let l=0;l<tamanho; l++)
       {
-        populargames.push(background_img,id);
+        const background_img = metacritic[l].background_img;  
+        const id = metacritic[l].id; 
+        if(background_img!=null)
+        {
+          populargames.push(background_img,id);
+        }
+        else{
+          tamanho = tamanho + 1
+        }
+      }
+     
+      if(namegame.length !== 0)
+      {
+        return {status:200,id:idgame, game:namegame,populargames:populargames}
       }
       else{
-        tamanho = tamanho + 1
+        return { status: 203, game: "Game not found" };
       }
-    }
-   
-    if(namegame.length !== 0)
-    {
-      return {status:200,id:idgame, game:namegame,populargames:populargames}
-    }
-    else{
-      return { status: 203, game: "Game not found" };
     }
   }
 
-  async searchGameByID(searchGameDto:SearchGameDto) {
-    const search = searchGameDto.id;
-    const game = await searchGamesByID(search);
+  async searchById(id: string) {
+    const game = await searchGamesByID(id);
 
     if(game.detail === "Not found.")
     {
@@ -94,7 +129,7 @@ export class GameService {
     }
   }
 
-  async findByReleaseDate(ordering: String) {
+  async searchByReleaseDate(ordering: string) {
     var games = null;
     if (ordering == "releasedate") {
       games = await searchGamesByReleaseDate(1);
@@ -114,20 +149,37 @@ export class GameService {
       return { status: 200, message: gameInformation }
   }
 
-  findAll() {
-    return `This action returns all game`;
+  async searchReviewsByGame(token: string, id: number) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const reviews = await this.ReviewModel.find({forum_id: id})
+      const game = await searchGamesByID(id);
+      const reviewsgame= [];
+      if(reviews.length!=0 )
+      {
+        for (const review of reviews) {
+          const user = await this.UserModel.findById(review.user_id); 
+          reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
+            
+        }
+        return {status: 200, message: "Reviews searched successfully", reviewsgame,numberOfReviews: reviews.length}
+      }
+      else{
+        return {status: 203, message: "Reviews not found"}
+      } 
+    } catch (error) {
+      return { status: 500, error: error }
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} game`;
-  }
-
-  update(id: number, updateGameDto: UpdateGameDto) {
-    return `This action updates a #${id} game`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} game`;
+  async searchTopicsByGame(token: string, id: number) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const topics = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1})
+      return {status: 200, message: "Topics searched successfully", topics}
+    }catch (error) {
+      return { status: 500, error: error }
+    }
   }
 }
 

@@ -1,44 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Headers } from '@nestjs/common';
 import { GameService } from './game.service';
-import { SearchGameDto } from './dto/search-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
 
-@Controller('game')
+@Controller('games')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-  @Post('search')
-  search(@Body() searchGameDto: SearchGameDto) {
-    return this.gameService.searchgame(searchGameDto);
-  }
-
-  @Post('searchbyid')
-  searchByID(@Body() searchGameDto: SearchGameDto) {
-    return this.gameService.searchGameByID(searchGameDto);
-  }
-
   @Get()
-  findbyReleaseDate(@Query('ordering') ordering: String) {
-    return this.gameService.findByReleaseDate(ordering);
-  }
-
-  @Get()
-  findAll() {
-    return this.gameService.findAll();
+  search(@Query('search') search: string, @Query('ordering') ordering: string) {
+    return this.gameService.search(search, ordering);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gameService.findOne(+id);
+  searchById(@Param('id') id: string) {
+    return this.gameService.searchById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(+id, updateGameDto);
+  @Get(':id/reviews')
+  searchReviewsByGame(@Headers('authorization') authorizationHeader: string, @Param('id') id: number) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.gameService.searchReviewsByGame(token, id)
+    } else return { status: 401, message: "Missing Token" }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.gameService.remove(+id);
+  @Get(':id/topics')
+  searchTopicsByGame(@Headers('authorization') authorizationHeader: string, @Param('id') id: number) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.gameService.searchTopicsByGame(token, id)
+    } else return { status: 401, message: "Missing Token" }
   }
 }
