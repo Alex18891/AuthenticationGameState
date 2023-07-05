@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers } from '@nestjs/common';
 import { TopicService } from './topic.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
@@ -12,8 +12,9 @@ export class TopicController {
   constructor(private readonly topicService: TopicService) {}
 
   @Post('create')
-  create(@Body() createTopicDto: CreateTopicDto) {
-    return this.topicService.create(createTopicDto);
+  create(@Headers('authorization') authorizationHeader: string, @Body() createTopicDto: CreateTopicDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.topicService.create(token, createTopicDto);
   }
 
   @Post('searchbyid')
@@ -25,7 +26,6 @@ export class TopicController {
   searchTopicByID(@Body() searchTopicIDDto: SearchTopicIDDto) {
     return this.topicService.searchTopicByID(searchTopicIDDto);
   }
-
 
   @Post('createcomment')
   createComment(@Body() createCommentDto: CreateCommentDto) {

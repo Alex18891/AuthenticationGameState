@@ -10,6 +10,8 @@ import { SearchTopicDto } from './dto/search-topic.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { LikeDislikeTopicDto } from './dto/like-dislike-topic.dto';
 
+const jwt = require('jsonwebtoken');
+
 const apiKey = '9c00b654361b4202be900194835b8665';
 
 const searchGamesByID = async (ID) => {
@@ -23,19 +25,24 @@ const searchGamesByID = async (ID) => {
 export class TopicService {
   constructor(@InjectModel(User.name) private UserModel: Model<User>, private configUserService: ConfigService, 
   @InjectModel(Topic.name) private TopicModel: Model<Topic>, private configTopicService: ConfigService) { }
-  async create(createTopicDto: CreateTopicDto) {
+  async create(token: string, createTopicDto: CreateTopicDto) {
     const name = createTopicDto.name;
     const text = createTopicDto.text;
     const likeDislike = 0;
     const username = ""
 
     if (name && text) {
-      const topic = new this.TopicModel(createTopicDto);
+      try {
+        jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
+        const topic = new this.TopicModel(createTopicDto);
       topic.save();
       await this.TopicModel.findOneAndUpdate({name: name}, {
         $set: {'likeDislike': {'username': username, 'likeDislike': likeDislike} }
       });
       return {status:200, message: "Topic Created"};
+      } catch (error) {
+        return { status: 500, error: error }
+      }
     }
     else{
       return {status:400, message: "Fill all fields" };

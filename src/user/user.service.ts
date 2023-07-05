@@ -46,7 +46,22 @@ export class UserService {
     const passwordvalid = await bcrypt.compare(password, userdb.password);
 
     if (passwordvalid) {
-      return { status: 200, message: "User logged in", id:userdb._id, username:userdb.username }
+      try {
+        const token=jwt.sign(
+          {
+              id:userdb._id, 
+              username:userdb.username
+          }, 
+            this.configService.get<string>('JWT_SECRET'),
+          {
+              // Autenticação expira em 30 dias
+              expiresIn: '30d'
+          })
+          return { status: 200, message: "User logged in", id:userdb._id, username:userdb.username, token }
+      } catch (error) {
+        return { status: 500, error: error }
+      }
+      
     } else {
       return { status: 400, message: "Wrong password" }
     }
@@ -137,21 +152,31 @@ export class UserService {
     }
   }
 
-  async searchUserByID(id: string) {
+  async searchUserByID(token: string, id: string) {
     const user = await this.UserModel.findOne({_id: id}).select('pushToken -_id')
     const userforeal = await this.UserModel.findOne({_id: id})
     if (user) {
-      return { status: 200, message: {user,createdAt: userforeal.createdAt,country:userforeal.country} }
+      try {
+        jwt.verify(token, this.configService.get<string>('JWT_SECRET'))
+        return { status: 200, message: {user,createdAt: userforeal.createdAt,country:userforeal.country} }
+      } catch (error) {
+        return { status: 500, error: error }
+      }
     } else {
       return { status: 203, message: "User not found"}
     }
   }
 
-  async updateUserPushToken(id: string, updateUserTokenDto: UpdateUserTokenDto) {
+  async updateUserPushToken(token: string, id: string, updateUserTokenDto: UpdateUserTokenDto) {
     const pushToken = updateUserTokenDto.pushToken
     const user = await this.UserModel.findOneAndUpdate({_id: id}, {pushToken: pushToken})
     if (user) {
-      return { status: 200, message: "Token updated" }
+      try {
+        jwt.verify(token, this.configService.get<string>('JWT_SECRET'))
+        return { status: 200, message: "Token updated" }
+      } catch (error) {
+        return { status: 500, error: error }
+      }
     } else {
       return { status: 203, message: "User not found"}
     }

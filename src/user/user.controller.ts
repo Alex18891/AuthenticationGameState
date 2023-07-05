@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Render, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Render, Put, Headers } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/forgotpwd-user.dto';
@@ -26,8 +26,9 @@ export class UserController {
   }
 
   @Put(':id')
-  updateUserPushToken(@Param('id') id: string, @Body() updateUserTokenDto: UpdateUserTokenDto) {
-    return this.userService.updateUserPushToken(id, updateUserTokenDto)
+  updateUserPushToken(@Headers('authorization') authorizationHeader: string, @Param('id') id: string, @Body() updateUserTokenDto: UpdateUserTokenDto) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.userService.updateUserPushToken(token, id, updateUserTokenDto)
   }
 
   @Get('changepwd/:id/:token')
@@ -42,7 +43,8 @@ export class UserController {
   }
 
   @Get(':id')
-  searchUserByID(@Param('id') id: string) {
-    return this.userService.searchUserByID(id)
+  searchUserByID(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.userService.searchUserByID(token, id)
   }
 }

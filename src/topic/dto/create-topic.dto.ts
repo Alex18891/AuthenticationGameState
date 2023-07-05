@@ -1,5 +1,4 @@
 import { Length } from "class-validator";
-import { ObjectId } from "mongoose";
 
 export class CreateTopicDto {
 
@@ -8,8 +7,5 @@ export class CreateTopicDto {
 
     text: string;
 
-    user_id: string;
-
     forum_id: number;
-
 }
