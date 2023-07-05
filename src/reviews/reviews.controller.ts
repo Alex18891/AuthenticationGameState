@@ -33,8 +33,9 @@ export class ReviewsController {
   }
 
   @Get()
-  findAll(@Query('ordering') ordering: String) {
-    return this.reviewsService.findAll(ordering);
+  findAll(@Headers('authorization') authorizationHeader: string, @Query('ordering') ordering: String) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.reviewsService.findAll(token, ordering);
   }
 
   @Get(':id')

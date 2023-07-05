@@ -44,7 +44,6 @@ export class ReviewsService {
     else{
       return {status:400, message: "Fill all fields" };
     }
-
   }
 
   async search(token: string, searchReviewDto: SearchReviewDto) {
@@ -128,13 +127,18 @@ export class ReviewsService {
     }
   }
 
-  async findAll(ordering: String) {
-    if(ordering === "releasedate") {
-      const reviews = await this.ReviewModel.find({}).sort({createdAt: 'descending'});
-      return {status: 200, message: reviews};
-    } else {
-      const reviews = await this.ReviewModel.find({});
-      return {status: 200, message: reviews};
+  async findAll(token: string, ordering: String) {
+    try {
+      jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
+      if(ordering === "releasedate") {
+        const reviews = await this.ReviewModel.find({}).sort({createdAt: 'descending'});
+        return {status: 200, message: reviews};
+      } else {
+        const reviews = await this.ReviewModel.find({});
+        return {status: 200, message: reviews};
+      }
+    } catch (error) {
+      return { status: 500, error: error }
     }
   }
 

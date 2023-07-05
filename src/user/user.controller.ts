@@ -50,12 +50,14 @@ export class UserController {
   }
 
   @Post(':id/wishlist')
-  addWishlistItem(@Body() wishlistDto: WishlistDto, @Param('id') id: string) {
-    return this.userService.addWishlistItem(wishlistDto, id);
+  addWishlistItem(@Headers('authorization') authorizationHeader: string, @Body() wishlistDto: WishlistDto, @Param('id') id: string) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.userService.addWishlistItem(token, wishlistDto, id);
   }
 
   @Delete(':id/wishlist/:gameID')
-  deleteWishlistItem(@Param('id') userID: string, @Param('gameID') gameID: number) {
-    return this.userService.removeWishlistItem(userID, gameID);
+  deleteWishlistItem(@Headers('authorization') authorizationHeader: string, @Param('id') userID: string, @Param('gameID') gameID: number) {
+    const token = authorizationHeader.replace('Bearer ', '');
+    return this.userService.removeWishlistItem(token, userID, gameID);
   }
 }
