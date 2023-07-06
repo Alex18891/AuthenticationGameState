@@ -55,6 +55,15 @@ export class UserController {
     } else return { status: 401, message: "Missing Token" }
   }
 
+  @Get(':id/wishlist')
+  searchWishlistByID(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.userService.searchWishlistByID(token, id)
+    } else return { status: 401, message: "Missing Token" }
+  }
+
   @Post(':id/wishlist')
   addWishlistItem(@Headers('authorization') authorizationHeader: string, @Body() wishlistDto: WishlistDto, @Param('id') id: string) {
     if(authorizationHeader) 

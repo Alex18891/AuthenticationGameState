@@ -175,7 +175,7 @@ export class GameService {
   async searchTopicsByGame(token: string, id: number) {
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
-      const topics = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1})
+      const topics = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1, text:1,createdAt:1})
       return {status: 200, message: "Topics searched successfully", topics}
     }catch (error) {
       return { status: 500, error: error }

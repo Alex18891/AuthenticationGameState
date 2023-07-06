@@ -269,6 +269,28 @@ export class UserService {
     }
   }
 
+  async searchWishlistByID(token:string,id:string){
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findByIdAndUpdate(id);
+      if (!user) {
+        return { status: 203, message: "User not found" };
+      } else 
+      {
+        const wishlistbyusernames= [];
+        const wishlists = user.wishlist;
+        for (const wishlist of wishlists) {
+          const game = await searchGamesByID(wishlist);
+          wishlistbyusernames.push({image:game.background_image})
+        }
+          return { status: 200, message: user.wishlist,wishlistbyusernames};
+      
+      } 
+    } catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
   async searchSubscribedGames(token: string, id: string) {
     
     try {
