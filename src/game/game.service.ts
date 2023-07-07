@@ -159,7 +159,7 @@ export class GameService {
       {
         for (const review of reviews) {
           const user = await this.UserModel.findById(review.user_id); 
-          reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
+          reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,text:review.text,image:game.background_image})
             
         }
         return {status: 200, message: "Reviews searched successfully", reviewsgame,numberOfReviews: reviews.length}
@@ -171,12 +171,19 @@ export class GameService {
       return { status: 500, error: error }
     }
   }
-
   async searchTopicsByGame(token: string, id: number) {
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
-      const topics = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1, text:1,createdAt:1})
-      return {status: 200, message: "Topics searched successfully", topics}
+      const topics: Topic[] = await this.TopicModel.find({forum_id: id}, {name: 1, _id: 1, text:1,createdAt:1,user_id:1})
+
+      const topicsWithUsername = [];
+
+      for (const topic of topics) {
+        const user = await this.UserModel.findById(topic.user_id);
+        topicsWithUsername.push({_id: topic._id, name: topic.name, text: topic.text, createdAt: topic.createdAt, user_id: topic.user_id, username: user.username});
+      }
+      
+      return {status: 200, message: "Topics searched successfully", topics:topicsWithUsername}
     }catch (error) {
       return { status: 500, error: error }
     }

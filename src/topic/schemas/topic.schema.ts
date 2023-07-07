@@ -50,6 +50,12 @@ export class Topic extends Document {
     dislikes: number;
     @Prop({ type: [LikeDislikeSchema], required: false })
     likeDislike: LikeDislike[];
+    get createdAt(): Date {
+        return this.createdAt;
+      }
+    get updatedAt(): Date {
+    return this.updatedAt;
+    }
 }
 
 export const TopicSchema = SchemaFactory.createForClass(Topic);

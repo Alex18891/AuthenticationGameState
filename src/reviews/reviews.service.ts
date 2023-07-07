@@ -15,10 +15,11 @@ export class ReviewsService {
   async create(token: string, createReviewDto: CreateReviewDto) {
     const rating = createReviewDto.rating;
     const forum_id = createReviewDto.forum_id
+    const user_id = createReviewDto.user_id
 
     if (rating >= 0 && rating <= 10) {
       try {
-        if(await this.ReviewModel.findOne({forum_id: forum_id})) return { status: 409, message: "Game is already on the wishlist" };
+        if(await this.ReviewModel.findOne({forum_id: forum_id, user_id: user_id})) return { status: 409, message: "Game is already reviewed" };
         jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
         const review = new this.ReviewModel(createReviewDto);
         review.save();
