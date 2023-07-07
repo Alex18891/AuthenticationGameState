@@ -65,7 +65,6 @@ export class TopicService {
   }
   }
 
-
   async createComment(token: string,createCommentDto: CreateCommentDto) {
     const text = createCommentDto.text;
     const userID = createCommentDto.user_id;
