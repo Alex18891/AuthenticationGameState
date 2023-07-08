@@ -38,7 +38,7 @@ const searchGamesByID = async (ID) => {
 };
 
 const allgames = async()=>{
-  const url = `https://api.rawg.io/api/games?key=${apiKey}&ordering=-metacritic`
+  const url = `https://api.rawg.io/api/games?key=${apiKey}&ordering=-rating_count,-rating`
   return fetch(url).then((response) => response.json()).then((data) => data.results);
 };
 
