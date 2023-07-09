@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Review } from 'src/reviews/schemas/review.schema';
 import { Topic } from 'src/topic/schemas/topic.schema';
 import { User } from 'src/user/schemas/user.schema';
+import { ReviewsService } from 'src/reviews/reviews.service';
 
 const jwt = require('jsonwebtoken');
 
@@ -44,7 +45,7 @@ const allgames = async()=>{
 
 @Injectable()
 export class GameService {
-  constructor(@InjectModel(Review.name) private ReviewModel: Model<Review>, @InjectModel(User.name) private UserModel: Model<User>, @InjectModel(Topic.name) private TopicModel: Model<User>, private configService: ConfigService) { }
+  constructor(private readonly reviewService: ReviewsService, @InjectModel(Review.name) private ReviewModel: Model<Review>, @InjectModel(User.name) private UserModel: Model<User>, @InjectModel(Topic.name) private TopicModel: Model<Topic>, private configService: ConfigService) { }
   async search(search: string, ordering: string) {
     var gamesOrder = null;
     if (ordering == "releasedate") { //Order filter verification
@@ -112,8 +113,11 @@ export class GameService {
     }
   }
 
-  async searchById(id: string) {
+  async searchById(token: string, id: number) {
     const game = await searchGamesByID(id);
+    const reviewResponse = await this.reviewService.searchReviewByGame(token, id);
+    console.log(reviewResponse)
+    const averageRating = reviewResponse.averageRating;
 
     if(game.detail === "Not found.")
     {
@@ -125,7 +129,7 @@ export class GameService {
         name: developer.name,
         image: developer.image_background
       }));
-      return { status: 200, message:{ name, id, developers: developerNames, release_date, image, description, platforms,imageadd,ratings_count }}
+      return { status: 200, message:{ name, id, developers: developerNames, release_date, image, description, platforms,imageadd,ratings_count, averageRating }}
     }
   }
 
@@ -186,6 +190,35 @@ export class GameService {
       return {status: 200, message: "Topics searched successfully", topics:topicsWithUsername}
     }catch (error) {
       return { status: 500, error: error }
+    }
+  }
+
+  async getCountriesMap(token: string, id: string) {
+    const countries = [];
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const topics = await this.TopicModel.find({forum_id: id}).distinct("user_id");
+      for (const topic of topics) {
+        const user = await this.UserModel.findById(topic);
+        countries.push(user.country);
+      }
+      
+      const countryCounts = countries.reduce((counts, country) => {
+        counts[country] = (counts[country] || 0) + 1;
+        return counts;
+      }, {});
+      
+      const countryNames = Object.keys(countryCounts);
+      const counts = Object.values(countryCounts);
+      
+      return {
+        status: 200,
+        message: "Topics searched successfully",
+        countryNames,
+        counts
+      };
+    } catch (error) {
+      return { status: 500, error: error };
     }
   }
 }

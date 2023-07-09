@@ -26,6 +26,7 @@ export class TopicController {
     } else return { status: 401, message: "Missing Token" }
   }
 
+
   @Post('comments')
   createComment(@Headers('authorization') authorizationHeader: string, @Body() createCommentDto: CreateCommentDto) {
     if(authorizationHeader) 

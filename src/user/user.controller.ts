@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, Render, Put, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Render, Put, Headers, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/forgotpwd-user.dto';
@@ -6,6 +7,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
 import { WishlistDto } from './dto/wishlist.dto';
+import { UploadPictureDto } from './dto/uploadpicture-user.dto';
 
 @Controller('users')
 export class UserController {
@@ -73,6 +75,15 @@ export class UserController {
     } else return { status: 401, message: "Missing Token" }
   }
 
+  @Get(':id/wishlist')
+  getWishlist(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.userService.getWishlist(token, id);
+    } else return { status: 401, message: "Missing Token" }
+  }
+
   @Delete(':id/wishlist/:gameId')
   deleteWishlistItem(@Headers('authorization') authorizationHeader: string, @Param('id') userId: string, @Param('gameId') gameId: number) {
     if(authorizationHeader) 
@@ -106,6 +117,19 @@ export class UserController {
     {
       const token = authorizationHeader.replace('Bearer ', '');
       return this.userService.searchTopicsByUser(token, username);
+    } else return { status: 401, message: "Missing Token" }
+  }
+
+  @Post(':id/uploadprofilepicture')
+  uploadImage(
+    @Headers('authorization') authorizationHeader: string,
+    @Param('id') id: string,
+    @Body() image: { uri: string }) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      const uri = image.uri
+      return this.userService.uploadImage(token, id, uri);
     } else return { status: 401, message: "Missing Token" }
   }
 }

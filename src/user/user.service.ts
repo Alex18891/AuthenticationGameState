@@ -11,6 +11,8 @@ import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
 import { WishlistDto } from './dto/wishlist.dto';
 import { Review } from '../reviews/schemas/review.schema';
 import { Topic } from 'src/topic/schemas/topic.schema';
+import { UploadPictureDto } from './dto/uploadpicture-user.dto';
+import { userInfo } from 'os';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -219,6 +221,30 @@ export class UserService {
     }
   }
 
+  async getWishlist(token: string, id: string) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const userWishlist = await this.UserModel.findById(id).select('wishlist')
+
+      if (!userWishlist || userWishlist.wishlist.length == 0) {
+        return { status: 200, message: [] }; // Return an empty array if wishlist is null or "N/A"
+      }
+  
+
+      const wishlist= [];
+      for (const wishlistGame of userWishlist.wishlist) {
+        const game = await searchGamesByID(wishlistGame);
+        const gameImages = game.background_image
+        const gameName = game.name
+        wishlist.push({wishlistGame, gameImages, gameName})
+      }
+      return { status: 200, message: wishlist }
+      
+    } catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
   async removeWishlistItem(token: string, userId: string, gameId: number) {
     try {
       jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
@@ -360,6 +386,17 @@ export class UserService {
       }
       return { status: 200, message: { topics, images, names, commentsbytopicos} };
     }catch (error) {
+      return { status: 500, error: error }
+    }
+  }
+
+  async uploadImage(token: string, id: string, image: string) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.UserModel.findByIdAndUpdate(id, { $push: { image: image }})
+      return { status: 200, message: "PFP Uploaded", user};
+
+    } catch (error) {
       return { status: 500, error: error }
     }
   }

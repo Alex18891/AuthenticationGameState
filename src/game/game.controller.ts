@@ -11,8 +11,12 @@ export class GameController {
   }
 
   @Get(':id')
-  searchById(@Param('id') id: string) {
-    return this.gameService.searchById(id);
+  searchById(@Headers('authorization') authorizationHeader: string, @Param('id') id: number) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.gameService.searchById(token, id);
+    } else return { status: 401, message: "Missing Token" }
   }
 
   @Get(':id/reviews')
@@ -30,6 +34,15 @@ export class GameController {
     {
       const token = authorizationHeader.replace('Bearer ', '');
       return this.gameService.searchTopicsByGame(token, id)
+    } else return { status: 401, message: "Missing Token" }
+  }
+
+  @Get(':id/countries')
+  getCountriesMap(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.gameService.getCountriesMap(token, id)
     } else return { status: 401, message: "Missing Token" }
   }
 }
