@@ -366,7 +366,7 @@ export class UserService {
         const forumID = topic.forum_id;
         const comments = topic.comments;
         const game = await searchGamesByID(forumID);
-        const { background_image: image, _id:gameid, name: name } = game;
+        const { background_image: image, id:gameid, name: name } = game;
         
         for(const comment of comments)
         { 
