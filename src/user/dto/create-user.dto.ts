@@ -15,4 +15,6 @@ export class CreateUserDto {
     country: string;
 
     pushToken: string;
+
+    image: string
 }
