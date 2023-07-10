@@ -41,7 +41,7 @@ export class TopicService {
   async searchTopicsByID(token: string, id: string) {
     try {
       jwt.verify(token, this.configTopicService.get<string>('JWT_SECRET'));
-      const topics = await this.TopicModel.findOne({ _id: id }).select('topic_id createdAt name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').lean();
+      const topics = await this.TopicModel.findOne({ _id: id }).select('topic_id createdAt name text likes dislikes user_id comments.text comments.user_id comments.createdAt likeDislike.likeDislike likeDislike.username').limit(10).lean();
       const user = await this.UserModel.findById(topics.user_id); 
       const username = user.username;
       const modifiedComments = [];

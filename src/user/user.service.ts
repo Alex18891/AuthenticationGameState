@@ -275,7 +275,7 @@ export class UserService {
       if (!user) {
         return { status: 203, message: "User not found" };
       }
-      const reviews = await this.ReviewModel.find({user_id:user._id})
+      const reviews = await this.ReviewModel.find({user_id:user._id}).limit(5)
       
       const reviewsbyusernames= [];
       if(reviews.length!=0 )
@@ -356,7 +356,7 @@ export class UserService {
       if (!user) {
         return { status: 203, message: "User not found" };
       }
-      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments');
+      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments').limit(5);
       const images = [];
       const names = [];
       const commentsbytopicos = []

@@ -80,7 +80,7 @@ export class ReviewsService {
   }
 
   async searchReviewByGame(token: string, id: number) {
-    const reviews = await this.ReviewModel.find({forum_id: id})
+    const reviews = await this.ReviewModel.find({forum_id: id}).limit(5)
     const game = await searchGamesByID(id);
     const reviewsgame= [];
     let totalRating = 0; // Variable to store the sum of all ratings
@@ -124,7 +124,7 @@ export class ReviewsService {
       if (!user) {
         return { status: 203, message: "User not found" };
       }
-      const reviews = await this.ReviewModel.find({user_id:user._id})
+      const reviews = await this.ReviewModel.find({user_id:user._id}).limit(5)
       
       const reviewsbyusernames= [];
       if(reviews.length!=0 )
@@ -148,10 +148,10 @@ export class ReviewsService {
     try {
       jwt.verify(token, this.configReviewService.get<string>('JWT_SECRET'));
       if(ordering === "releasedate") {
-        const reviews = await this.ReviewModel.find({}).sort({createdAt: 'descending'});
+        const reviews = await this.ReviewModel.find({}).sort({createdAt: 'descending'}).limit(5);
         return {status: 200, message: reviews};
       } else {
-        const reviews = await this.ReviewModel.find({});
+        const reviews = await this.ReviewModel.find({}).limit(5);
         return {status: 200, message: reviews};
       }
     } catch (error) {
@@ -160,7 +160,7 @@ export class ReviewsService {
   }
 
   async findByUser(token: string, user_id: String) {
-    const reviews = await this.ReviewModel.find({user_id: user_id}).select('rating title text forum_id')
+    const reviews = await this.ReviewModel.find({user_id: user_id}).select('rating title text forum_id').limit(5)
     const reviewsgame= [];
 
     if(reviews.length!=0 )
