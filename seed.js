@@ -153,3 +153,6 @@ async function seedData() {
 
 connect();
 seedData();
+
+connect();
+seedData();

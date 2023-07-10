@@ -8,6 +8,7 @@ import { ChangepwdUserDto } from './dto/changepwd-user.dto';
 import { UpdateUserTokenDto } from './dto/changetoken-user.dto';
 import { WishlistDto } from './dto/wishlist.dto';
 import { UploadPictureDto } from './dto/uploadpicture-user.dto';
+import { SendPushNotificationDto } from './dto/sendpushNotification.dto';
 
 @Controller('users')
 export class UserController {
@@ -130,6 +131,15 @@ export class UserController {
       const token = authorizationHeader.replace('Bearer ', '');
       const uri = image.uri
       return this.userService.uploadImage(token, id, uri);
+    } else return { status: 401, message: "Missing Token" }
+  }
+
+  @Post('/pushnotifications')
+  sendPushNotification(@Headers('authorization') authorizationHeader: string, @Body() sendPushNotificationDto: SendPushNotificationDto) {
+    if(authorizationHeader) 
+    {
+      const token = authorizationHeader.replace('Bearer ', '');
+      return this.userService.sendPushNotification(token, sendPushNotificationDto);
     } else return { status: 401, message: "Missing Token" }
   }
 }

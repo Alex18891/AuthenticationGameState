@@ -13,6 +13,9 @@ import { Review } from '../reviews/schemas/review.schema';
 import { Topic } from 'src/topic/schemas/topic.schema';
 import { UploadPictureDto } from './dto/uploadpicture-user.dto';
 import { userInfo } from 'os';
+import { SendPushNotificationDto } from './dto/sendpushNotification.dto';
+import * as admin from 'firebase-admin';
+import * as path from 'path';
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -366,7 +369,15 @@ export class UserService {
         const forumID = topic.forum_id;
         const comments = topic.comments;
         const game = await searchGamesByID(forumID);
-        const { background_image: image, id:gameid, name: name } = game;
+        let gameid = 549466;
+        let image = "https://media.rawg.io/media/screenshots/093/0939b75cbaccb8d5eb7f9ba8b39f0b2f.jpg";
+        const { background_image: gameImage, id: gameId, name: name } = game;
+        if (gameImage) {
+          image = gameImage;
+        }
+        if (gameId) {
+          gameid = gameId;
+        }
         
         for(const comment of comments)
         { 
@@ -399,5 +410,32 @@ export class UserService {
     } catch (error) {
       return { status: 500, error: error }
     }
+  }
+
+  async sendPushNotification(token: string, sendPushNotificationDto: SendPushNotificationDto) {
+    try {
+      jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const pushToken = sendPushNotificationDto.pushToken;
+      const body = sendPushNotificationDto.body;
+      const title = sendPushNotificationDto.title;
+      const topicID = sendPushNotificationDto.topicId;
+      const gameID = sendPushNotificationDto.gameId;
+
+      // Send the message using the Firebase Admin SDK
+      await admin
+        .messaging()
+        .send({
+          notification: { title, body },
+          data: {topicID, gameID: gameID.toString()},
+          token: pushToken,
+          android: { priority: 'high' },
+        })
+        .catch((error: any) => {
+          console.error(error);
+        })
+        return { status: 200, message: "Notification send"};
+      } catch (error) {
+        return { status: 500, error: error }
+      }
   }
 }
