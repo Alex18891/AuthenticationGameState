@@ -10,7 +10,7 @@ import { SearchReviewDto } from './dto/search-review.dto';
 
 const jwt = require('jsonwebtoken');
 
-const apiKey = '9c00b654361b4202be900194835b8665';
+const apiKey = 'v';
 
 const searchGamesByID = async (ID) => {
   const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
@@ -92,7 +92,6 @@ export class ReviewsService {
           const user = await this.UserModel.findById(review.user_id); 
           reviewsgame.push({username:user.username,rating:review.rating,_id:review._id,user_id:review.user_id,title:review.title,image:game.background_image})
           totalRating += review.rating
-          console.log(totalRating)
         }
 
         let averageRating = null; // Default value for averageRating when there are no ratings

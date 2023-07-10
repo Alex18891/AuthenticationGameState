@@ -18,7 +18,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require("nodemailer");
 
-const apiKey = '9c00b654361b4202be900194835b8665';
+const apiKey = '8abc1d018c164b0186bad9b4a2fa352b';
 
 const searchGamesByID = async (ID) => {
   const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;

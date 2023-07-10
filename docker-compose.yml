@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+ nodejs-api:
+    build:
+        context: ./
+        dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+        - "3000:3000"
+    container_name: nodejs-api
+    links:
+        - mongo-db
+ mongo-db:
+    image: mongo
+    ports:
+        - "27017:27017"
+    container_name: mongo-db
+    volumes:
+        - ./db/:/data/db
+ reactapp:
+    image: reactapp
+    build:
+        context: ../../TPPWAReact/GameStateWeb
+        dockerfile: Dockerfile.prod
+    ports:
+        - "3006:80"
+    container_name: backendreact
+    volumes:
+        - ./db/:/data/db
+        

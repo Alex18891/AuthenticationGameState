@@ -75,7 +75,7 @@ export class UserController {
     } else return { status: 401, message: "Missing Token" }
   }
 
-  @Get(':id/wishlist')
+  @Get(':id/userwishlist')
   getWishlist(@Headers('authorization') authorizationHeader: string, @Param('id') id: string) {
     if(authorizationHeader) 
     {
