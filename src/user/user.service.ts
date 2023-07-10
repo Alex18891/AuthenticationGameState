@@ -21,7 +21,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require("nodemailer");
 
-const apiKey = '9c00b654361b4202be900194835b8665';
+const apiKey = '8abc1d018c164b0186bad9b4a2fa352b';
 
 const searchGamesByID = async (ID) => {
   const url = `https://api.rawg.io/api/games/${ID}?key=${apiKey}`;
@@ -278,7 +278,7 @@ export class UserService {
       if (!user) {
         return { status: 203, message: "User not found" };
       }
-      const reviews = await this.ReviewModel.find({user_id:user._id})
+      const reviews = await this.ReviewModel.find({user_id:user._id}).limit(5)
       
       const reviewsbyusernames= [];
       if(reviews.length!=0 )
@@ -359,7 +359,7 @@ export class UserService {
       if (!user) {
         return { status: 203, message: "User not found" };
       }
-      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments');
+      const topics = await this.TopicModel.find({ user_id: user._id }).select('_id text createdAt name forum_id comments').limit(5);
       const images = [];
       const names = [];
       const commentsbytopicos = []
@@ -369,7 +369,15 @@ export class UserService {
         const forumID = topic.forum_id;
         const comments = topic.comments;
         const game = await searchGamesByID(forumID);
-        const { background_image: image, id:gameid, name: name } = game;
+        let gameid = 549466;
+        let image = "https://media.rawg.io/media/screenshots/093/0939b75cbaccb8d5eb7f9ba8b39f0b2f.jpg";
+        const { background_image: gameImage, id: gameId, name: name } = game;
+        if (gameImage) {
+          image = gameImage;
+        }
+        if (gameId) {
+          gameid = gameId;
+        }
         
         for(const comment of comments)
         { 

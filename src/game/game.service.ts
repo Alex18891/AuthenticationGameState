@@ -9,7 +9,7 @@ import { ReviewsService } from 'src/reviews/reviews.service';
 
 const jwt = require('jsonwebtoken');
 
-const apiKey = '1260124e75cb49e2ad9c2dba5ec02e3a';
+const apiKey = '8abc1d018c164b0186bad9b4a2fa352b';
 
 const searchGames = async (searchText) => {
   const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${searchText}&search_exact=true&ordering=-metacritic`
@@ -116,7 +116,6 @@ export class GameService {
   async searchById(token: string, id: number) {
     const game = await searchGamesByID(id);
     const reviewResponse = await this.reviewService.searchReviewByGame(token, id);
-    console.log(reviewResponse)
     const averageRating = reviewResponse.averageRating;
 
     if(game.detail === "Not found.")

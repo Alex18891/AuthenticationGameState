@@ -5,14 +5,12 @@ const bcrypt = require('bcryptjs');
 const uri = 'mongodb://localhost:27017';
 const client = new MongoClient(uri);
 
-const generateSampleUsers = async (count) => {
+const generateSampleUsers = async (count, password) => {
   const sampleUsers = [];
   for (let i = 1; i <= count; i++) {
-    const password = `password${i}`;
-    const passwordEncrypt = await bcrypt.hash(password, 10);
     sampleUsers.push({
       username: `user${i}`,
-      password: passwordEncrypt,
+      password: password,
       email: `user${i}@example.com`,
       country: `Portugal`,
       pushToken: `pushToken${i}`,
@@ -53,7 +51,7 @@ const generateSampleTopics = async (count) => {
     const topic = {
       name: `Topic ${i}`,
       text: `This is topic ${i}`,
-      forum_id: i,
+      forum_id: Math.floor(Math.random() * 1000000) + 1,
       user_id: userIds[randomUserIndex],
       comments: [
         {
@@ -118,23 +116,28 @@ async function seedData() {
     const reviewCollection = db.collection('reviews');
     const topicCollection = db.collection('topics');
 
-    const total = 10;
+    const password = `password`;
+    const passwordEncrypt = await bcrypt.hash(password, 10);
 
-    const sampleUsers = await generateSampleUsers(total);
+    const totalUsers = 10;
+    const totalReviews = 10000;
+    const totalTopics = 10000;
+
+    const sampleUsers = await generateSampleUsers(totalUsers, passwordEncrypt);
 
     const insertedUsers = await userCollection.insertMany(sampleUsers);
     console.log(
       `${insertedUsers.insertedCount} users inserted into the database`,
     );
 
-    const sampleReviews = await generateSampleReviews(total);
+    const sampleReviews = await generateSampleReviews(totalReviews);
 
     const insertedReviews = await reviewCollection.insertMany(sampleReviews);
     console.log(
       `${insertedReviews.insertedCount} reviews inserted into the database`,
     );
 
-    const sampleTopics = await generateSampleTopics(total);
+    const sampleTopics = await generateSampleTopics(totalTopics);
 
     const insertedTopics = await topicCollection.insertMany(sampleTopics);
     console.log(
